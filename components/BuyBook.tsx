@@ -26,6 +26,7 @@ export default function BuyBook() {
     customer: {
       email: email,
       name: name,
+      phone_number: '',
     },
     customizations: {
       title: 'Get Hired Handbook',
