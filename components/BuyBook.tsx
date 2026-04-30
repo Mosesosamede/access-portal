@@ -73,33 +73,33 @@ export default function BuyBook() {
 
   if (txResult) {
     return (
-        <div className="bg-glass p-8 rounded-xl border border-white/20 text-center">
-            <h2 className="text-2xl font-bold mb-4 text-[#DFFF00]">Matriculation Successful!</h2>
+        <div className="bg-white/5 backdrop-blur-md p-6 md:p-8 rounded-3xl border border-white/10 text-center shadow-2xl">
+            <h2 className="text-xl md:text-2xl font-bold mb-4 text-[#DFFF00]">Matriculation Successful!</h2>
             <p className="text-sm mb-4">Your Access Code is:</p>
-            <div className="bg-[#0A192F] p-4 text-2xl font-mono text-[#00D4FF] mb-6 rounded border border-[#00D4FF]">
+            <div className="bg-[#0A192F] p-4 text-xl md:text-2xl font-mono text-[#00D4FF] mb-6 rounded-xl border border-[#00D4FF]">
                 {txResult.code}
             </div>
-            <a href="https://access.deloxehr.com" className="bg-[#00D4FF] text-[#0A192F] px-8 py-3 rounded-full font-bold">Get your book inside the portal</a>
+            <a href="https://access.deloxehr.com" className="inline-block bg-[#00D4FF] text-[#0A192F] px-6 py-3 md:px-8 md:py-4 rounded-full font-bold hover:scale-105 transition-transform text-sm md:text-base">Get your book inside the portal</a>
         </div>
     )
   }
 
   return (
-    <div className="bg-glass rounded-2xl border border-white/5 p-8 w-full max-w-sm">
+    <div className="bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 p-6 md:p-8 w-full max-w-sm shadow-2xl">
         <div className="flex justify-between items-center mb-6">
-            <span className="text-2xl font-bold text-[#DFFF00]">{currency} {PRICES[currency]}</span>
-            <select value={currency} onChange={(e) => setCurrency(e.target.value as keyof typeof PRICES)} className="bg-[#0A192F] p-2 rounded text-white border border-gray-700">
+            <span className="text-xl md:text-2xl font-bold text-[#DFFF00]">{currency} {PRICES[currency]}</span>
+            <select value={currency} onChange={(e) => setCurrency(e.target.value as keyof typeof PRICES)} className="bg-[#0A192F] p-2 rounded-xl text-white border border-gray-700">
                 {Object.keys(PRICES).map(c => <option key={c} value={c}>{c}</option>)}
             </select>
         </div>
-        <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#0A192F] p-3 rounded mb-4 border-b-2 border-transparent transition-all focus:border-[#00D4FF] focus:outline-none" />
-        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-[#0A192F] p-3 rounded mb-4 border-b-2 border-transparent transition-all focus:border-[#00D4FF] focus:outline-none" />
-        <input type="tel" placeholder="Phone Number" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="w-full bg-[#0A192F] p-3 rounded mb-4 border-b-2 border-transparent transition-all focus:border-[#00D4FF] focus:outline-none" />
+        <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#0A192F] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#00D4FF] focus:outline-none transition-all" />
+        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-[#0A192F] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#00D4FF] focus:outline-none transition-all" />
+        <input type="tel" placeholder="Phone Number" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="w-full bg-[#0A192F] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#00D4FF] focus:outline-none transition-all" />
         
         <button 
             onClick={handleBuy}
             disabled={loading}
-            className="w-full bg-[#DFFF00] text-[#0A192F] px-8 py-3 rounded-full font-bold uppercase tracking-widest hover:scale-105 transition-transform"
+            className="w-full bg-[#DFFF00] text-[#0A192F] px-6 py-3 md:px-8 md:py-4 rounded-full font-bold uppercase tracking-widest hover:scale-105 transition-transform text-sm md:text-base"
         >
             {loading ? 'Processing...' : `Buy Handbook`}
         </button>
