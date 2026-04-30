@@ -17,7 +17,7 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
     nyscCert: File | null
   }>({ passport: null, eduCert: null, cv: null, nyscCert: null });
 
-  const { register, handleSubmit, watch, control, setValue, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, watch, control, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       skills: [{ course_name: '', platform: '', year: new Date().getFullYear() }]

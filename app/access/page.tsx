@@ -8,10 +8,12 @@ export default function AccessPortalPage() {
   const [code, setCode] = useState('');
   const [bookCodeId, setBookCodeId] = useState('');
   const [isVerified, setIsVerified] = useState(false);
+  const [codeUsed, setCodeUsed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleVerify = async () => {
     setLoading(true);
+    setCodeUsed(false);
     try {
       const { data, error } = await supabase
         .from('book_codes')
@@ -22,7 +24,7 @@ export default function AccessPortalPage() {
       if (error || !data) {
         alert('Invalid Code');
       } else if (data.is_used) {
-        alert('This code has already been used. Please purchase a new handbook to get a valid code.');
+        setCodeUsed(true);
       } else {
         setBookCodeId(data.id);
         setIsVerified(true);
@@ -36,26 +38,32 @@ export default function AccessPortalPage() {
   };
 
   return (
-    <main className="min-h-screen text-[#E0E6ED] p-12">
-      <div className="bg-glass rounded-2xl border border-white/5 cyan-glow flex flex-col p-12 max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-[#00D4FF] mb-4">Access Portal</h1>
+    <main className="min-h-screen text-[#E0E6ED] p-12 bg-[#0A192F]">
+      <div className="bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 p-12 max-w-4xl mx-auto shadow-2xl">
+        <h1 className="text-4xl font-bold text-[#00D4FF] mb-6">Portal Access</h1>
         
-        {!isVerified ? (
-          <div className="space-y-4">
-            <p className="text-xl">Enter your Access Code to unlock your registration.</p>
+        {codeUsed ? (
+          <div className="space-y-6">
+            <p className="text-xl text-amber-400">This code has already been used.</p>
+            <p>Please get the book again to generate a new valid access code.</p>
+            <a href="/sales" className="inline-block px-8 py-4 bg-[#DFFF00] text-[#0A192F] rounded-full font-bold text-lg hover:shadow-lg transition-all">Get the Book</a>
+          </div>
+        ) : !isVerified ? (
+          <div className="space-y-6">
+            <p className="text-xl">Enter your Access Code to journey into the portal.</p>
             <input 
               type="text" 
               value={code} 
               onChange={(e) => setCode(e.target.value)}
               placeholder="Enter Access Code"
-              className="w-full bg-glass p-3 rounded border border-white/20"
+              className="w-full bg-[#0A192F]/50 p-4 rounded-xl border border-white/10 focus:border-[#00D4FF] focus:outline-none transition-all"
             />
             <button 
               onClick={handleVerify} 
               disabled={loading}
-              className="px-6 py-3 bg-[#DFFF00] text-[#0A192F] rounded-lg font-bold disabled:opacity-50"
+              className="px-8 py-4 bg-[#DFFF00] text-[#0A192F] rounded-xl font-bold text-lg disabled:opacity-50 hover:shadow-lg transition-all"
             >
-              {loading ? 'Verifying...' : 'Verify Code'}
+              {loading ? 'Verifying...' : 'Start Your Journey'}
             </button>
           </div>
         ) : (
