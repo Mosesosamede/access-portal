@@ -40,7 +40,7 @@ export default function AccessPortalPage() {
   return (
     <main className="min-h-screen text-[#E0E6ED] p-6 md:p-12 bg-transparent">
       <div className="bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 p-6 md:p-12 max-w-2xl mx-auto shadow-2xl">
-        <h1 className="text-3xl md:text-4xl font-bold text-[#00D4FF] mb-6 text-center md:text-left">Portal Access</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-[#d9f0dd] mb-6 text-center md:text-left">Portal Access</h1>
         
         {codeUsed ? (
           <div className="space-y-6 text-center">
@@ -56,7 +56,7 @@ export default function AccessPortalPage() {
               value={code} 
               onChange={(e) => setCode(e.target.value)}
               placeholder="Enter Access Code"
-              className="w-full bg-[#0A192F]/50 p-4 rounded-xl border border-white/10 focus:border-[#00D4FF] focus:outline-none transition-all text-lg"
+              className="w-full bg-[#0A192F]/50 p-4 rounded-xl border border-white/10 focus:border-[#d9f0dd] focus:outline-none transition-all text-lg"
             />
             <button 
               onClick={handleVerify} 

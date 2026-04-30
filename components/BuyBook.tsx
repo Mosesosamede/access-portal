@@ -76,10 +76,10 @@ export default function BuyBook() {
         <div className="bg-white/5 backdrop-blur-md p-6 md:p-8 rounded-3xl border border-white/10 text-center shadow-2xl">
             <h2 className="text-xl md:text-2xl font-bold mb-4 text-[#DFFF00]">Matriculation Successful!</h2>
             <p className="text-sm mb-4">Your Access Code is:</p>
-            <div className="bg-[#0A192F] p-4 text-xl md:text-2xl font-mono text-[#00D4FF] mb-6 rounded-xl border border-[#00D4FF]">
+            <div className="bg-[#0A192F] p-4 text-xl md:text-2xl font-mono text-[#d9f0dd] mb-6 rounded-xl border border-[#d9f0dd]">
                 {txResult.code}
             </div>
-            <a href="https://access.deloxehr.com" className="inline-block bg-[#00D4FF] text-[#0A192F] px-6 py-3 md:px-8 md:py-4 rounded-full font-bold hover:scale-105 transition-transform text-sm md:text-base">Get your book inside the portal</a>
+            <a href="https://access.deloxehr.com" className="inline-block bg-[#d9f0dd] text-[#0A192F] px-6 py-3 md:px-8 md:py-4 rounded-full font-bold hover:scale-105 transition-transform text-sm md:text-base">Get your book inside the portal</a>
         </div>
     )
   }
@@ -92,9 +92,9 @@ export default function BuyBook() {
                 {Object.keys(PRICES).map(c => <option key={c} value={c}>{c}</option>)}
             </select>
         </div>
-        <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#0A192F] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#00D4FF] focus:outline-none transition-all" />
-        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-[#0A192F] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#00D4FF] focus:outline-none transition-all" />
-        <input type="tel" placeholder="Phone Number" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="w-full bg-[#0A192F] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#00D4FF] focus:outline-none transition-all" />
+        <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#0A192F] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#d9f0dd] focus:outline-none transition-all" />
+        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-[#0A192F] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#d9f0dd] focus:outline-none transition-all" />
+        <input type="tel" placeholder="Phone Number" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="w-full bg-[#0A192F] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#d9f0dd] focus:outline-none transition-all" />
         
         <button 
             onClick={handleBuy}

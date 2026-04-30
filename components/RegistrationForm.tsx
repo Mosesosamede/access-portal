@@ -176,7 +176,7 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
                     <input type="number" {...register(`skills.${index}.year`)} placeholder="Year" className="bg-glass p-2 rounded" />
                 </div>
             ))}
-            <button type="button" onClick={() => append({course_name: '', platform: '', year: new Date().getFullYear()})} className="text-sm text-[#00D4FF]">Add Skill</button>
+            <button type="button" onClick={() => append({course_name: '', platform: '', year: new Date().getFullYear()})} className="text-sm text-[#d9f0dd]">Add Skill</button>
           </div>
         );
       case 9:
@@ -219,7 +219,7 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
       </AnimatePresence>
       <div className="flex justify-between mt-8">
         <button type="button" disabled={step === 1 || loading} onClick={prevStep} className="px-6 py-3 bg-gray-700 text-white rounded-full font-bold disabled:opacity-50">Back</button>
-        {step < 10 && <button type="button" onClick={nextStep} className="px-6 py-3 bg-[#00D4FF] text-[#0A192F] rounded-full font-bold">Next</button>}
+        {step < 10 && <button type="button" onClick={nextStep} className="px-6 py-3 bg-[#d9f0dd] text-[#0A192F] rounded-full font-bold">Next</button>}
       </div>
     </form>
   );
