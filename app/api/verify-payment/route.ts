@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { PRICES } from '@/lib/constants';
-import { generateCode } from '@/lib/codeGenerator';
 
 export async function POST(req: Request) {
   const { transaction_id, expectedCurrency, userEmail } = await req.json();
@@ -11,6 +10,7 @@ export async function POST(req: Request) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  // 1. Verify with Flutterwave
   const res = await fetch(
     `https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`,
     {
@@ -38,41 +38,48 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, message: 'Payment mismatch' });
   }
 
-  // Prevent Duplicates
-  const { data: existingTx } = await supabase
+  // 2. Verify existence
+  const { data: existingTx, error: selectError } = await supabase
     .from('purchases')
     .select('id')
-    .eq('customer_email', tx.customer.email)
-    .eq('amount_paid', tx.amount)
-    .single();
+    .eq('transaction_id', transaction_id)
+    .maybeSingle();
+
+  if (selectError) {
+    return NextResponse.json({ success: false, message: 'Database lookup error' }, { status: 500 });
+  }
 
   if (existingTx) {
     return NextResponse.json({ success: false, message: 'Transaction already processed' });
   }
 
-  // Insert Purchase
+  // 3. Insert Purchase
   const { data: purchase, error: pErr } = await supabase
     .from('purchases')
     .insert({
+      transaction_id: transaction_id,
       customer_email: tx.customer.email,
       amount_paid: tx.amount,
     })
     .select('id')
     .single();
 
-  if (pErr) return NextResponse.json({ success: false, message: 'DB Error' });
+  if (pErr) {
+      console.error('Insert error:', pErr);
+      return NextResponse.json({ success: false, message: 'Database insertion error' }, { status: 500 });
+  }
 
-  // Generate and assign code
-  const newCode = generateCode();
-  const { error: cErr } = await supabase
+  // 4. Retrieve generated code from database (handled by trigger)
+  const { data: codeData, error: cErr } = await supabase
     .from('book_codes')
-    .insert({
-      code_string: newCode,
-      purchase_id: purchase.id,
-      is_used: false
-    });
+    .select('code_string')
+    .eq('purchase_id', purchase.id)
+    .single();
 
-  if (cErr) return NextResponse.json({ success: false, message: 'Code generation error' });
+  if (cErr) {
+      console.error('Code retrieval error:', cErr);
+      return NextResponse.json({ success: false, message: 'Code retrieval error' }, { status: 500 });
+  }
 
-  return NextResponse.json({ success: true, code: newCode });
+  return NextResponse.json({ success: true, code: codeData.code_string });
 }
