@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import RegistrationForm from '@/components/RegistrationForm';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
+const supabase = getSupabase();
 
 export default function AccessPortalPage() {
   const [code, setCode] = useState('');

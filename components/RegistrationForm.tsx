@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormSchema, FormData } from '@/lib/formSchema';
 import { motion, AnimatePresence } from 'motion/react';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 
 export default function RegistrationForm({ bookCodeId }: { bookCodeId: string }) {
   const [step, setStep] = useState(1);
@@ -26,8 +26,8 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
 
   const { fields, append } = useFieldArray({ control, name: 'skills' });
   const currentStage = watch('current_stage');
-
   const uploadFile = async (file: File, bucket: string) => {
+    const supabase = getSupabase();
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
     const { error: uploadError } = await supabase.storage.from(bucket).upload(fileName, file);
@@ -37,6 +37,7 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
   };
 
   const onSubmit = async (data: FormData) => {
+    const supabase = getSupabase();
     setLoading(true);
     try {
       const passportUrl = await uploadFile(files.passport!, 'applicant-docs');
