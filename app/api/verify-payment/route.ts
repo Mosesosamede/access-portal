@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { PRICES } from '@/lib/constants';
+import nodemailer from 'nodemailer';
+import { render } from '@react-email/render';
+import { PaymentConfirmationEmail } from '@/components/emails/PaymentConfirmation';
+import * as React from 'react';
 
 export async function POST(req: Request) {
   const { transaction_id, expectedCurrency, userEmail } = await req.json();
@@ -79,6 +83,31 @@ export async function POST(req: Request) {
   if (cErr) {
       console.error('Code retrieval error:', cErr);
       return NextResponse.json({ success: false, message: 'Code retrieval error' }, { status: 500 });
+  }
+
+  // 5. Send Email
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: false, // upgrade later with STARTTLS
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    const emailHtml = await render(React.createElement(PaymentConfirmationEmail, { bookCode: codeData.code_string }));
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: userEmail,
+      subject: 'Payment Confirmed — Access Your Portal 🚀',
+      html: emailHtml,
+    });
+  } catch (error) {
+    console.error('Email sending error:', error);
+    // Don't fail the payment if email fails, but log it
   }
 
   return NextResponse.json({ success: true, code: codeData.code_string });
