@@ -10,6 +10,7 @@ export const FormSchema = z.object({
 
   // Step 3
   email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
   phone_number: z.string().min(10, "Phone number is too short"),
   residential_address: z.string().min(5, "Address is too short"),
 

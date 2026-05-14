@@ -1,6 +1,5 @@
 'use client';
-import { useState } from 'react';
-import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
+import { useState, useEffect } from 'react';
 import { PRICES } from '@/lib/constants';
 
 export default function BuyBook() {
@@ -10,40 +9,54 @@ export default function BuyBook() {
   const [currency, setCurrency] = useState<keyof typeof PRICES>('NGN');
   const [loading, setLoading] = useState(false);
   const [txResult, setTxResult] = useState<{code: string} | null>(null);
+  const [txRef] = useState(() => `deloxe-tx-${Date.now()}`);
 
-  const config = {
-    public_key: process.env.NEXT_PUBLIC_FLW_PUBLIC_KEY || '',
-    tx_ref: `deloxe-tx-${Date.now()}`,
-    amount: PRICES[currency],
-    currency,
-    payment_options: 'card,mobilemoney,ussd',
-    customer: {
-      email,
-      name,
-      phone_number: phoneNumber,
-    },
-    customizations: {
-      title: 'Get Hired Handbook',
-      description: 'Payment for Get Hired Handbook',
-      logo: 'https://i.ibb.co/KzNwhhj3/getting-hire-got-easier.png',
-    },
-  };
-
-  const fw = useFlutterwave(config);
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.flutterwave.com/v3.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => { 
+        if (document.body.contains(script)) {
+            document.body.removeChild(script); 
+        }
+    }
+  }, []);
 
   const handleBuy = () => {
     if (!email || !name || !phoneNumber) { alert('Please enter name, email, and phone number'); return; }
     
-    fw({
+    // @ts-ignore
+    if (typeof window.FlutterwaveCheckout !== 'function') {
+      alert('Payment system loading, try again in a moment');
+      return;
+    }
+
+    // @ts-ignore
+    window.FlutterwaveCheckout({
+      public_key: process.env.NEXT_PUBLIC_FLW_PUBLIC_KEY || '',
+      tx_ref: txRef,
+      amount: PRICES[currency],
+      currency,
+      payment_options: 'card,mobilemoney,ussd',
+      customer: {
+        email,
+        name,
+        phone_number: phoneNumber,
+      },
+      customizations: {
+        title: 'Get Hired Handbook',
+        description: 'Payment for Get Hired Handbook',
+        logo: 'https://i.ibb.co/KzNwhhj3/getting-hire-got-easier.png',
+      },
       callback: async (response: any) => {
-        closePaymentModal();
         if (response.status === 'successful') {
           handleVerify(response.transaction_id);
         } else {
           alert('Payment cancelled / failed');
-        }
+        }                
       },
-      onClose: () => {},
+      onclose: () => {},
     });
   };
 

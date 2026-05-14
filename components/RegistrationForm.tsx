@@ -1,15 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormSchema, FormData } from '@/lib/formSchema';
 import { motion, AnimatePresence } from 'motion/react';
 import { getSupabase } from '@/lib/supabase';
+import confetti from 'canvas-confetti';
 
 export default function RegistrationForm({ bookCodeId }: { bookCodeId: string }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [registeredUser, setRegisteredUser] = useState({ name: '', email: '' });
   const [files, setFiles] = useState<{
     passport: File | null,
     eduCert: File | null,
@@ -17,7 +20,7 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
     nyscCert: File | null
   }>({ passport: null, eduCert: null, cv: null, nyscCert: null });
 
-  const { register, handleSubmit, watch, control, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, control, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       skills: [{ course_name: '', platform: '', year: new Date().getFullYear() }]
@@ -25,11 +28,11 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
   });
 
   const { fields, append } = useFieldArray({ control, name: 'skills' });
-  const currentStage = watch('current_stage');
+  const currentStage = useWatch({ control, name: 'current_stage' });
   const uploadFile = async (file: File, bucket: string) => {
     const supabase = getSupabase();
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
+    const fileName = `${crypto.randomUUID()}.${fileExt}`;
     const { error: uploadError } = await supabase.storage.from(bucket).upload(fileName, file);
     if (uploadError) throw uploadError;
     const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
@@ -37,15 +40,29 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
   };
 
   const onSubmit = async (data: FormData) => {
+    console.log('Submitting data:', data);
     const supabase = getSupabase();
     setLoading(true);
     try {
-      const passportUrl = await uploadFile(files.passport!, 'applicant-docs');
-      const eduCertUrl = await uploadFile(files.eduCert!, 'Edu_cert');
-      const cvUrl = await uploadFile(files.cv!, 'cv_resume');
+      // 1. Sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+      });
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("Could not create user");
+
+      if (!files.passport) throw new Error("Passport photo is required");
+      if (!files.eduCert) throw new Error("Educational certificate is required");
+      if (!files.cv) throw new Error("CV is required");
+
+      const passportUrl = await uploadFile(files.passport, 'passport_img');
+      const eduCertUrl = await uploadFile(files.eduCert, 'Edu_cert');
+      const cvUrl = await uploadFile(files.cv, 'cv_resume');
       
       let nyscCertUrl = undefined;
-      if (currentStage === 'Completed NYSC' && files.nyscCert) {
+      // Safety check for NYSC cert file being null/undefined when needed
+      if ((currentStage === 'Completed NYSC') && files.nyscCert) {
         nyscCertUrl = await uploadFile(files.nyscCert, 'nysc_cert');
       }
 
@@ -55,10 +72,12 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
       } else if (currentStage === 'Waiting for NYSC' || currentStage === 'Currently Serving (NYSC)') {
         statusTag = 'Graduate';
       }
-      // If we implement staff, we can add it here.
-
+      
+      const { password, ...dataWithoutPassword } = data;
+      
       const finalData = {
-        ...data,
+        ...dataWithoutPassword,
+        auth_user_id: authData.user.id,
         passport_photo_url: passportUrl,
         educational_cert_url: eduCertUrl,
         cv_resume_url: cvUrl,
@@ -67,23 +86,60 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
         status_tag: statusTag
       };
 
+      console.log('Final data to insert:', finalData);
+
       const { error: insertError } = await supabase.from('applicants').insert(finalData);
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        throw insertError;
+      }
       
       const { error: updateCodeError } = await supabase
         .from('book_codes')
         .update({ is_used: true })
         .eq('id', bookCodeId);
       
-      if (updateCodeError) throw updateCodeError;
+      if (updateCodeError) {
+        console.error('Update code error:', updateCodeError);
+        throw updateCodeError;
+      }
 
-      alert('Application submitted successfully!');
+      // Send welcome email
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: data.email,
+          subject: 'Welcome to Deloxe HR!',
+          html: `
+            <div style="font-family: sans-serif; padding: 20px; background-color: #f4f4f4;">
+              <h1 style="color: #0A192F;">Welcome to Deloxe HR, ${data.full_name}!</h1>
+              <p>We are excited to have you in our talent ecosystem.</p>
+              <p>Your journey has officially begun.</p>
+              <br/>
+              <p>Best Regards,</p>
+              <p><strong>The Deloxe HR Team</strong></p>
+            </div>
+          `,
+        }),
+      });
+
+      setRegisteredUser({ name: data.full_name, email: data.email });
+      setSubmitted(true);
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
     } catch (e) {
-      console.error(e);
-      alert('Submission failed.');
+      console.error('Registration error details:', e);
+      alert(`Submission failed: ${e instanceof Error ? e.message : String(e)}. Check console for details.`);
     } finally {
       setLoading(false);
     }
+  };
+
+  const onError = (errors: any) => {
+    console.error('Validation errors:', errors);
+    alert('Please fix validation errors before submitting.');
   };
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 10));
@@ -147,18 +203,37 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
         return (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Step 6: Asset Uploads</h2>
-            <p className="text-sm text-gray-400">Please upload Passport, Education Cert, and CV.</p>
-            <input type="file" onChange={(e) => setFiles(prev => ({...prev, passport: e.target.files![0]}))} className="w-full bg-glass p-3 rounded border border-white/20" />
-            <input type="file" onChange={(e) => setFiles(prev => ({...prev, eduCert: e.target.files![0]}))} className="w-full bg-glass p-3 rounded border border-white/20" />
-            <input type="file" onChange={(e) => setFiles(prev => ({...prev, cv: e.target.files![0]}))} className="w-full bg-glass p-3 rounded border border-white/20" />
+            
+            <div className="space-y-1">
+                <label className="text-sm text-gray-300">Passport Photograph</label>
+                <input type="file" onChange={(e) => setFiles(prev => ({...prev, passport: e.target.files![0]}))} className="w-full bg-glass p-3 rounded border border-white/20" />
+            </div>
+
+            <div className="space-y-1">
+                <label className="text-sm text-gray-300">Educational Certificate</label>
+                <input type="file" onChange={(e) => setFiles(prev => ({...prev, eduCert: e.target.files![0]}))} className="w-full bg-glass p-3 rounded border border-white/20" />
+            </div>
+
+            <div className="space-y-1">
+                <label className="text-sm text-gray-300">Curriculum Vitae (CV)</label>
+                <input type="file" onChange={(e) => setFiles(prev => ({...prev, cv: e.target.files![0]}))} className="w-full bg-glass p-3 rounded border border-white/20" />
+            </div>
           </div>
         );
       case 7:
         return currentStage === 'Completed NYSC' ? (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Step 7: NYSC Requirements</h2>
-            <input type="file" onChange={(e) => setFiles(prev => ({...prev, nyscCert: e.target.files![0]}))} className="w-full bg-glass p-3 rounded border border-white/20" />
-            <input type="date" {...register('nysc_completion_date')} className="w-full bg-glass p-3 rounded border border-white/20" />
+            
+            <div className="space-y-1">
+                <label className="text-sm text-gray-300">NYSC Certificate</label>
+                <input type="file" onChange={(e) => setFiles(prev => ({...prev, nyscCert: e.target.files![0]}))} className="w-full bg-glass p-3 rounded border border-white/20" />
+            </div>
+
+            <div className="space-y-1">
+                <label className="text-sm text-gray-300">NYSC Completion Date</label>
+                <input type="date" {...register('nysc_completion_date')} className="w-full bg-glass p-3 rounded border border-white/20" />
+            </div>
           </div>
         ) : (
             <div className="space-y-4">
@@ -195,7 +270,8 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
         return (
             <div className='space-y-4'>
                 <h2 className="text-2xl font-bold">Step 10: Final Review & Submit</h2>
-                <p>Review your information before submitting.</p>
+                <input type="password" {...register('password')} placeholder="Create a password to secure your account" className="w-full bg-glass p-3 rounded border border-white/20" />
+                <p className="text-sm text-gray-400">Review your information before submitting.</p>
                 <button type="submit" disabled={loading} className="bg-[#DFFF00] text-[#0A192F] w-full px-6 py-4 rounded-full font-bold">
                   {loading ? 'Submitting...' : 'Submit Application'}
                 </button>
@@ -207,21 +283,34 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="bg-glass p-8 rounded-xl border border-white/10 max-w-2xl mx-auto shadow-lg cyan-glow">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-        >
-          {renderStep()}
-        </motion.div>
-      </AnimatePresence>
-      <div className="flex justify-between mt-8">
-        <button type="button" disabled={step === 1 || loading} onClick={prevStep} className="px-6 py-3 bg-gray-700 text-white rounded-full font-bold disabled:opacity-50">Back</button>
-        {step < 10 && <button type="button" onClick={nextStep} className="px-6 py-3 bg-[#d9f0dd] text-[#0A192F] rounded-full font-bold">Next</button>}
-      </div>
+    <form onSubmit={handleSubmit(onSubmit, onError)} className="bg-glass p-8 rounded-xl border border-white/10 max-w-2xl mx-auto shadow-lg cyan-glow">
+      {submitted ? (
+        <div className="text-center space-y-6">
+          <h2 className="text-2xl font-bold text-[#d9f0dd]">Welcome to the Deloxe Network, {registeredUser.name}! 🎉</h2>
+          <p className="text-gray-300">Your professional journey has officially begun.</p>
+          <p className="text-gray-300">A confirmation has been sent to {registeredUser.email}. Please keep your password secure.</p>
+          <button type="button" onClick={() => window.location.href = '/dashboard'} className="w-full px-6 py-4 bg-[#DFFF00] text-[#0A192F] rounded-full font-bold hover:shadow-lg transition-all hover:scale-105">
+            Proceed to My Dashboard
+          </button>
+        </div>
+      ) : (
+        <>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+            >
+              {renderStep()}
+            </motion.div>
+          </AnimatePresence>
+          <div className="flex justify-between mt-8">
+            <button type="button" disabled={step === 1 || loading} onClick={prevStep} className="px-6 py-3 bg-gray-700 text-white rounded-full font-bold disabled:opacity-50">Back</button>
+            {step < 10 && <button type="button" onClick={nextStep} className="px-6 py-3 bg-[#d9f0dd] text-[#0A192F] rounded-full font-bold">Next</button>}
+          </div>
+        </>
+      )}
     </form>
   );
 }

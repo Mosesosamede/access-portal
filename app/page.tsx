@@ -15,12 +15,17 @@ export default function HomePage() {
         <div className="mt-4 text-3xl md:text-4xl text-[#d9f0dd] animate-bounce">↓</div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 md:gap-6 w-full sm:w-auto">
-        <Link href="/sales" className="px-6 py-3 md:px-8 md:py-4 bg-[#DFFF00] text-[#0A192F] rounded-full font-bold text-base md:text-lg hover:shadow-lg transition-all hover:scale-105 text-center">
-          Handbook here
-        </Link>
-        <Link href="/access" className="px-6 py-3 md:px-8 md:py-4 bg-transparent border border-[#d9f0dd] text-[#d9f0dd] rounded-full font-bold text-base md:text-lg hover:bg-[#d9f0dd] hover:text-[#0A192F] transition-all text-center">
-          Start Your Journey
+      <div className="flex flex-col items-center gap-4 md:gap-6 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row gap-4 md:gap-6">
+          <Link href="/sales" className="px-6 py-3 md:px-8 md:py-4 bg-[#DFFF00] text-[#0A192F] rounded-full font-bold text-base md:text-lg hover:shadow-lg transition-all hover:scale-105 text-center">
+            Handbook here
+          </Link>
+          <Link href="/access" className="px-6 py-3 md:px-8 md:py-4 bg-transparent border border-[#d9f0dd] text-[#d9f0dd] rounded-full font-bold text-base md:text-lg hover:bg-[#d9f0dd] hover:text-[#0A192F] transition-all text-center">
+            Start Your Journey
+          </Link>
+        </div>
+        <Link href="/login" className="px-6 py-3 md:px-8 md:py-4 bg-transparent border border-cyan-500 text-cyan-500 rounded-full font-bold text-base md:text-lg hover:bg-cyan-500 hover:text-[#0A192F] transition-all text-center">
+          Already Registered? Member Login
         </Link>
       </div>
     </main>

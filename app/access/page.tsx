@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import RegistrationForm from '@/components/RegistrationForm';
 import { getSupabase } from '@/lib/supabase';
 const supabase = getSupabase();
@@ -12,7 +12,7 @@ export default function AccessPortalPage() {
   const [codeUsed, setCodeUsed] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleVerify = async () => {
+  const handleVerify = useCallback(async () => {
     setLoading(true);
     setCodeUsed(false);
     try {
@@ -23,7 +23,7 @@ export default function AccessPortalPage() {
         .single();
 
       if (error || !data) {
-        alert('Invalid Code');
+        // Handle invalid code, maybe do nothing until fully typed or show error?
       } else if (data.is_used) {
         setCodeUsed(true);
       } else {
@@ -32,11 +32,20 @@ export default function AccessPortalPage() {
       }
     } catch (e) {
       console.error(e);
-      alert('An error occurred during verification.');
+      // alert('An error occurred during verification.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [code]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (code && code.length >= 5) { // Assuming codes are at least 5 chars
+        handleVerify();
+      }
+    }, 1000); // 1 second debounce
+    return () => clearTimeout(handler);
+  }, [code, handleVerify]);
 
   return (
     <main className="min-h-screen text-[#E0E6ED] p-6 md:p-12 bg-transparent">
