@@ -86,12 +86,12 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
         status_tag: statusTag
       };
 
-      console.log('Final data to insert:', finalData);
+      console.log('Final data to update:', finalData);
 
-      const { error: insertError } = await supabase.from('applicants').insert(finalData);
-      if (insertError) {
-        console.error('Insert error:', insertError);
-        throw insertError;
+      const { error: updateError } = await supabase.from('applicants').update(finalData).eq('auth_user_id', authData.user.id);
+      if (updateError) {
+        console.error('Update error:', updateError);
+        throw updateError;
       }
       
       const { error: updateCodeError } = await supabase

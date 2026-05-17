@@ -20,10 +20,10 @@ export default function ConsentPage() {
         </div>
 
         <div className="flex gap-4">
-          <button className="flex-1 bg-white hover:bg-white/90 text-[#0A192F] font-bold py-3 rounded-xl transition">
+          <button id="approve-btn" name="approve-btn" className="flex-1 bg-white hover:bg-white/90 text-[#0A192F] font-bold py-3 rounded-xl transition">
             Approve
           </button>
-          <button className="flex-1 bg-transparent border border-white/20 hover:bg-white/5 text-white font-bold py-3 rounded-xl transition">
+          <button id="deny-btn" name="deny-btn" className="flex-1 bg-transparent border border-white/20 hover:bg-white/5 text-white font-bold py-3 rounded-xl transition">
             Deny
           </button>
         </div>

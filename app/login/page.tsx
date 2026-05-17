@@ -18,30 +18,13 @@ export default function LoginPage() {
     setErrorMessage('');
     
     try {
-      // 1. Check if the applicant exists first to provide specific feedback
-      const { data: applicant, error: checkError } = await supabase
-        .from('applicants')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error('Check error:', checkError);
-      }
-
-      if (!applicant) {
-        setErrorMessage('Email address not recognized. Please register first.');
-        setLoading(false);
-        return;
-      }
-
       // 2. Attempt login
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
         console.error('Login error details:', error);
         if (error.message.includes('credentials')) {
-          setErrorMessage('Incorrect password. Please check your password and try again.');
+          setErrorMessage('Incorrect password. Please check your credentials and try again.');
         } else {
           setErrorMessage(error.message);
         }
@@ -70,6 +53,8 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} className="space-y-4">
           <input 
             type="email" 
+            id="email"
+            name="email"
             value={email} 
             onChange={(e) => setEmail(e.target.value)} 
             placeholder="Email Address" 
@@ -78,6 +63,8 @@ export default function LoginPage() {
           />
           <input 
             type="password" 
+            id="password"
+            name="password"
             value={password} 
             onChange={(e) => setPassword(e.target.value)} 
             placeholder="Password" 
@@ -86,6 +73,8 @@ export default function LoginPage() {
           />
           <button 
             type="submit" 
+            id="login-submit"
+            name="login-submit"
             disabled={loading} 
             className="w-full px-6 py-4 bg-[#DFFF00] text-[#0A192F] rounded-full font-bold hover:shadow-lg transition-all hover:scale-105"
           >
