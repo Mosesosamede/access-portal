@@ -26,18 +26,7 @@ export default function SetupAccountPage() {
       return;
     }
 
-    // 2. Link with applicants table (assuming applicants table has email field)
-    if (authData.user) {
-      const { error: linkError } = await supabase
-        .from('applicants')
-        .update({ user_id: authData.user.id })
-        .eq('email', email);
-        
-        if (linkError) {
-            console.error('Error linking user:', linkError.message);
-        }
-    }
-
+    // 2. Link with applicants table is now handled automatically by database trigger
     router.push('/dashboard');
   };
 
