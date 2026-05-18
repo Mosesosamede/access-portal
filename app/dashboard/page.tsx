@@ -12,14 +12,11 @@ export default function DashboardPage() {
     upcomingDeadlines: [],
     recentActivity: []
   });
-  const [greeting, setGreeting] = useState('');
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
 
   useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting('Good Morning');
-    else if (hour < 18) setGreeting('Good Afternoon');
-    else setGreeting('Good Evening');
-
     const fetchData = async () => {
       const supabase = getSupabase();
       const { data: { user } } = await supabase.auth.getUser();
@@ -27,7 +24,7 @@ export default function DashboardPage() {
         const { data: applicant } = await supabase
           .from('applicants')
           .select('training_progress, current_stage')
-          .eq('auth_user_id', user.id)
+          .eq('user_id', user.id)
           .single();
         
         if (applicant) {

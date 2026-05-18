@@ -11,7 +11,7 @@ export default function SettingsPage() {
         const supabase = getSupabase();
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-            const { data } = await supabase.from('applicants').select('*').eq('auth_user_id', user.id).single();
+            const { data } = await supabase.from('applicants').select('*').eq('user_id', user.id).single();
             if (data) setApplicant(data);
         }
     }

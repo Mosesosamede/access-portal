@@ -30,7 +30,7 @@ export default function SetupAccountPage() {
     if (authData.user) {
       const { error: linkError } = await supabase
         .from('applicants')
-        .update({ auth_user_id: authData.user.id })
+        .update({ user_id: authData.user.id })
         .eq('email', email);
         
         if (linkError) {

@@ -20,7 +20,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const supabase = getSupabase();
         const { data } = await supabase.auth.getUser();
         if (data.user) {
-            const { data: applicant } = await supabase.from('applicants').select('training_progress, current_stage').eq('auth_user_id', data.user.id).single();
+            const { data: applicant } = await supabase.from('applicants').select('training_progress, current_stage').eq('user_id', data.user.id).single();
             if (applicant) {
                 setTrainingProgress(applicant.training_progress);
                 setCurrentStage(applicant.current_stage);

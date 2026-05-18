@@ -77,7 +77,7 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
       
       const finalData = {
         ...dataWithoutPassword,
-        auth_user_id: authData.user.id,
+        user_id: authData.user.id,
         passport_photo_url: passportUrl,
         educational_cert_url: eduCertUrl,
         cv_resume_url: cvUrl,
@@ -86,12 +86,14 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
         status_tag: statusTag
       };
 
-      console.log('Final data to update:', finalData);
+      console.log('Final data to upsert:', finalData);
 
-      const { error: updateError } = await supabase.from('applicants').update(finalData).eq('auth_user_id', authData.user.id);
-      if (updateError) {
-        console.error('Update error:', updateError);
-        throw updateError;
+      const { error: upsertError } = await supabase
+        .from('applicants')
+        .upsert(finalData, { onConflict: 'email' });
+      if (upsertError) {
+        console.error('Upsert error detailed:', upsertError);
+        throw new Error(`Database error saving user profile: ${upsertError.message} (Code: ${upsertError.code}, Hint: ${upsertError.hint})`);
       }
       
       const { error: updateCodeError } = await supabase
@@ -101,7 +103,7 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
       
       if (updateCodeError) {
         console.error('Update code error:', updateCodeError);
-        throw updateCodeError;
+        throw new Error(`Database error updating book code: ${updateCodeError.message}`);
       }
 
       // Send welcome email
