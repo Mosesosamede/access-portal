@@ -23,15 +23,15 @@ export default function DashboardPage() {
       if (user) {
         const { data: applicant } = await supabase
           .from('applicants')
-          .select('training_progress, current_stage')
+          .select('progress_percent, current_stage')
           .eq('user_id', user.id)
           .single();
         
         if (applicant) {
           setData(prev => ({ 
             ...prev, 
-            trainingProgress: applicant.training_progress,
-            currentStage: applicant.current_stage || 1
+            trainingProgress: applicant.progress_percent || 0,
+            currentStage: parseInt(applicant.current_stage) || 1
           }));
         }
       }

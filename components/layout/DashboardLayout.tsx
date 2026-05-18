@@ -20,10 +20,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const supabase = getSupabase();
         const { data } = await supabase.auth.getUser();
         if (data.user) {
-            const { data: applicant } = await supabase.from('applicants').select('training_progress, current_stage').eq('user_id', data.user.id).single();
+            const { data: applicant } = await supabase.from('applicants').select('progress_percent, current_stage').eq('user_id', data.user.id).single();
             if (applicant) {
-                setTrainingProgress(applicant.training_progress);
-                setCurrentStage(applicant.current_stage);
+                setTrainingProgress(applicant.progress_percent || 0);
+                setCurrentStage(parseInt(applicant.current_stage) || 1);
             }
         } else {
             setTrainingProgress(0); // Mock for testing
