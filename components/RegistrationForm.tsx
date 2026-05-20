@@ -52,6 +52,11 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
       if (authError) throw authError;
       if (!authData.user) throw new Error("Could not create user");
 
+      // Verify the session
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('User signed up and session retrieved:', session?.user?.id === authData.user.id);
+      console.log('Session user:', session?.user);
+
       if (!files.passport) throw new Error("Passport photo is required");
       if (!files.eduCert) throw new Error("Educational certificate is required");
       if (!files.cv) throw new Error("CV is required");

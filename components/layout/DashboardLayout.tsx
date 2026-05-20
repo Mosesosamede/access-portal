@@ -33,6 +33,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     fetchApplicantData();
   }, []);
 
+  const handleLogout = async () => {
+    const supabase = getSupabase();
+    await supabase.auth.signOut();
+    window.location.href = '/login';
+  };
+
   const isLocked = currentStage <= 5;
 
   return (
@@ -101,7 +107,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link href="/dashboard/profile" className="block p-3 hover:bg-white/5">Profile</Link>
                 <Link href="/dashboard/skills" className="block p-3 hover:bg-white/5">Skills</Link>
                 <Link href="/dashboard/preferences" className="block p-3 hover:bg-white/5">Preferences</Link>
-                <button className="w-full text-left p-3 text-red-400 hover:bg-white/5 flex items-center gap-2">
+                <button onClick={handleLogout} className="w-full text-left p-3 text-red-400 hover:bg-white/5 flex items-center gap-2">
                   <LogOut size={16} /> Logout
                 </button>
               </motion.div>
