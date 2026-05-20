@@ -88,12 +88,15 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
 
       console.log('Final data to upsert:', finalData);
 
-      const { error: upsertError } = await supabase
+      const { data: upsertData, error: upsertError } = await supabase
         .from('applicants')
-        .upsert(finalData, { onConflict: 'email' });
+        .upsert(finalData, { 
+          onConflict: 'email' // This tells Supabase: "If you see this email, update the row"
+        });
+
       if (upsertError) {
-        console.error('Upsert error detailed:', upsertError);
-        throw new Error(`Database error saving user profile: ${upsertError.message} (Code: ${upsertError.code}, Hint: ${upsertError.hint})`);
+        console.error("Upsert Error Details:", upsertError);
+        throw upsertError;
       }
       
       const { error: updateCodeError } = await supabase
