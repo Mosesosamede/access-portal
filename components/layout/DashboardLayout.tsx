@@ -22,29 +22,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const supabase = getSupabase();
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-      if (!session) {
-        router.push('/login');
-      } else {
-        setUser(session.user);
-        fetchApplicantData(session.user.id);
-      }
-    });
-
-    // Initial check
-    const checkUser = async () => {
+    // Check session initially and listen for changes
+    const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login');
-      } else {
+      if (session) {
         setUser(session.user);
         await fetchApplicantData(session.user.id);
+      } else {
+        router.push('/login');
       }
       setIsLoading(false);
     };
 
-    checkUser();
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setUser(session.user);
+        fetchApplicantData(session.user.id);
+      } else {
+        setUser(null);
+        router.push('/login');
+      }
+    });
 
     return () => subscription.unsubscribe();
   }, [router]);
