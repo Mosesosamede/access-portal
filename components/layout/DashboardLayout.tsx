@@ -1,45 +1,87 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { LayoutDashboard, BookOpen, GraduationCap, Briefcase, User, Settings, LogOut, ChevronDown, Lock } from 'lucide-react';
+import { LayoutDashboard, BookOpen, GraduationCap, Briefcase, User, Settings, LogOut, ChevronDown, Lock, Loader2 } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [profileOpen, setProfileOpen] = useState(false);
-  const [currentStage, setCurrentStage] = useState(0);
-  const [trainingProgress, setTrainingProgress] = useState(0);
+  const [currentStage, setCurrentStage] = useState<number | null>(null);
+  const [trainingProgress, setTrainingProgress] = useState<number>(0);
   const [lockedModal, setLockedModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
 
   useEffect(() => {
-    // Fetch applicant data
-    const fetchApplicantData = async () => {
-        const supabase = getSupabase();
-        const { data } = await supabase.auth.getUser();
-        if (data.user) {
-            const { data: applicant } = await supabase.from('applicants').select('progress_percent, current_stage').eq('user_id', data.user.id).single();
-            if (applicant) {
-                setTrainingProgress(applicant.progress_percent || 0);
-                setCurrentStage(parseInt(applicant.current_stage) || 1);
-            }
-        } else {
-            setTrainingProgress(0); // Mock for testing
-            setCurrentStage(0); // Mock for testing
-        }
+    const supabase = getSupabase();
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      if (!session) {
+        router.push('/login');
+      } else {
+        setUser(session.user);
+        fetchApplicantData(session.user.id);
+      }
+    });
+
+    // Initial check
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/login');
+      } else {
+        setUser(session.user);
+        await fetchApplicantData(session.user.id);
+      }
+      setIsLoading(false);
+    };
+
+    checkUser();
+
+    return () => subscription.unsubscribe();
+  }, [router]);
+
+  const fetchApplicantData = async (userId: string) => {
+    const supabase = getSupabase();
+    const { data: applicant, error } = await supabase
+        .from('applicants')
+        .select('progress_percent, current_stage')
+        .eq('user_id', userId)
+        .single();
+    
+    if (applicant) {
+        setTrainingProgress(applicant.progress_percent || 0);
+        setCurrentStage(parseInt(applicant.current_stage) || 1);
+    } else {
+        console.error('Error fetching applicant data:', error);
+        // Handle case where user exists in Auth but not in Applicants table
+        setCurrentStage(null);
     }
-    fetchApplicantData();
-  }, []);
+  };
 
   const handleLogout = async () => {
     const supabase = getSupabase();
     await supabase.auth.signOut();
-    window.location.href = '/login';
+    router.push('/login');
   };
 
-  const isLocked = currentStage <= 5;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[rgb(38,47,44)] flex items-center justify-center">
+        <Loader2 size={48} className="animate-spin text-[#DFFF00]" />
+      </div>
+    );
+  }
+
+  const isLocked = currentStage === null || currentStage <= 5;
 
   return (
     <div className="min-h-screen bg-[rgb(38,47,44)] text-[#E0E6ED] flex">
@@ -94,7 +136,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
         <header className="border-b border-white/10 bg-[rgb(38,47,44)]/80 backdrop-blur-lg p-4 flex justify-between items-center sticky top-0 z-50">
-          <h1 className="text-lg font-semibold">{greeting}, Candidate</h1>
+          <h1 className="text-lg font-semibold">{greeting}, {user?.email || 'Candidate'}</h1>
           <div className="relative">
             <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full hover:bg-white/10 transition">
               <User size={18} />
