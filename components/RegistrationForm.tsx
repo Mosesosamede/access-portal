@@ -104,15 +104,18 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
         throw upsertError;
       }
       
-      const { error: updateCodeError } = await supabase
+      const { data: updatedCode, error: updateCodeError } = await supabase
         .from('book_codes')
         .update({ is_used: true })
-        .eq('id', bookCodeId);
+        .eq('id', bookCodeId)
+        .select();
       
       if (updateCodeError) {
         console.error('Update code error:', updateCodeError);
         throw new Error(`Database error updating book code: ${updateCodeError.message}`);
       }
+
+      console.log('Book code updated successfully:', updatedCode);
 
       // Send welcome email
       await fetch('/api/send-email', {

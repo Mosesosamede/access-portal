@@ -1,5 +1,6 @@
 import type {Metadata} from 'next';
 import './globals.css'; // Global styles
+import { ApplicantProvider } from '@/components/ApplicantContext';
 
 export const metadata: Metadata = {
   title: 'Deloxe HR Ecosystem',
@@ -20,7 +21,9 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           <div className="absolute top-[50%] left-[30%] w-48 h-48 bg-purple-500 rounded-full mix-blend-screen filter blur-3xl animate-pulse delay-700"></div>
           <div className="absolute bottom-[20%] left-[20%] w-72 h-72 bg-blue-500 rounded-full mix-blend-screen filter blur-3xl animate-pulse delay-1000"></div>
         </div>
-        <div className="relative z-10">{children}</div>
+        <ApplicantProvider>
+            <div className="relative z-10">{children}</div>
+        </ApplicantProvider>
       </body>
     </html>
   );

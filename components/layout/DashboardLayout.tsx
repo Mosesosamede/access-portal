@@ -1,78 +1,18 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { LayoutDashboard, BookOpen, GraduationCap, Briefcase, User, Settings, LogOut, ChevronDown, Lock, Loader2 } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
-import { User as SupabaseUser } from '@supabase/supabase-js';
+import { useApplicant } from '@/components/ApplicantContext';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const { applicant, isLoading, user } = useApplicant();
   const [profileOpen, setProfileOpen] = useState(false);
-  const [currentStage, setCurrentStage] = useState<number | null>(null);
-  const [trainingProgress, setTrainingProgress] = useState<number>(0);
   const [lockedModal, setLockedModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<SupabaseUser | null>(null);
   
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
-
-  useEffect(() => {
-    const supabase = getSupabase();
-
-    // Check session initially and listen for changes
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setUser(session.user);
-        await fetchApplicantData(session.user.id);
-      } else {
-        router.push('/login');
-      }
-      setIsLoading(false);
-    };
-
-    checkSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        setUser(session.user);
-        fetchApplicantData(session.user.id);
-      } else {
-        setUser(null);
-        router.push('/login');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [router]);
-
-  const fetchApplicantData = async (userId: string) => {
-    const supabase = getSupabase();
-    const { data: applicant, error } = await supabase
-        .from('applicants')
-        .select('progress_percent, current_stage')
-        .eq('user_id', userId)
-        .single();
-    
-    if (applicant) {
-        setTrainingProgress(applicant.progress_percent || 0);
-        setCurrentStage(parseInt(applicant.current_stage) || 1);
-    } else {
-        console.error('Error fetching applicant data:', error);
-        // Handle case where user exists in Auth but not in Applicants table
-        setCurrentStage(null);
-    }
-  };
-
-  const handleLogout = async () => {
-    const supabase = getSupabase();
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[rgb(38,47,44)] flex items-center justify-center">
@@ -81,7 +21,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  const isLocked = currentStage === null || currentStage <= 5;
+  if (!user) {
+    router.push('/login');
+    return null;
+  }
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
+
+  const handleLogout = async () => {
+    const supabase = getSupabase();
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
+
+  const isLocked = !applicant || applicant.progress_percent < 100;
 
   return (
     <div className="min-h-screen bg-[rgb(38,47,44)] text-[#E0E6ED] flex">
@@ -136,7 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
         <header className="border-b border-white/10 bg-[rgb(38,47,44)]/80 backdrop-blur-lg p-4 flex justify-between items-center sticky top-0 z-50">
-          <h1 className="text-lg font-semibold">{greeting}, {user?.email || 'Candidate'}</h1>
+          <h1 className="text-lg font-semibold">{greeting}, {applicant?.full_name || user?.email || 'Candidate'}</h1>
           <div className="relative">
             <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full hover:bg-white/10 transition">
               <User size={18} />
