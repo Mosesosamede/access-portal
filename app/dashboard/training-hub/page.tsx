@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useApplicant } from '@/components/ApplicantContext';
 import { Loader2, Lock, Unlock } from 'lucide-react';
+import { getSupabase } from '@/lib/supabase';
 
 export default function TrainingHubPage() {
   const { modules, completedModules, completeModule, isLoading } = useApplicant();
@@ -25,6 +26,15 @@ export default function TrainingHubPage() {
     return completedModules.some(log => log.module_number === moduleNumber);
   };
 
+  const handleSelectModule = async (module: any) => {
+    const supabase = getSupabase();
+    const { data } = supabase.storage
+      .from('applicants_docs')
+      .getPublicUrl(module.pdf_path);
+    setSelectedPdf(data.publicUrl);
+    setSelectedModule(module.module_number);
+  };
+
   return (
     <>
       <h2 className="text-3xl font-bold mb-6 text-[#DFFF00]">Training Hub</h2>
@@ -38,7 +48,7 @@ export default function TrainingHubPage() {
                 return (
                     <button 
                         key={m.id} 
-                        onClick={() => !locked && (setSelectedPdf(m.pdf_path), setSelectedModule(m.module_number))} 
+                        onClick={() => !locked && handleSelectModule(m)} 
                         disabled={locked}
                         className={`block w-full text-left p-4 rounded-xl flex items-center justify-between ${locked ? 'opacity-50 cursor-not-allowed bg-white/5' : 'hover:bg-white/10 bg-[rgb(38,47,44)]'}`}
                     >
