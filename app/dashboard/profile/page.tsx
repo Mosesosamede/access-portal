@@ -19,7 +19,7 @@ export default function ProfilePage() {
 
   return (
     <>
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-6 pt-4">
         <Link href="/dashboard" className="p-2 bg-[rgb(50,60,55)] rounded-full hover:bg-white/10 transition">
           <ArrowLeft size={20} />
         </Link>
