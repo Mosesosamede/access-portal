@@ -29,7 +29,7 @@ export default function TrainingHubPage() {
   const handleSelectModule = async (module: any) => {
     const supabase = getSupabase();
     const { data } = supabase.storage
-      .from('applicants_docs')
+      .from('applicant-docs')
       .getPublicUrl(module.pdf_path);
     setSelectedPdf(data.publicUrl);
     setSelectedModule(module.module_number);
