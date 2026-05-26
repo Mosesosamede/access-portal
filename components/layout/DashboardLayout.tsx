@@ -39,40 +39,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const isLocked = !applicant || applicant.progress_percent < 100;
 
-  const NavLinks = () => (
-    <nav className="space-y-4">
-      {[
-        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { href: '/handbook', label: 'My Handbook', icon: BookOpen },
-        { href: '/dashboard/training-hub', label: 'Training Hub', icon: GraduationCap },
-        { href: '/dashboard/profile', label: 'Profile', icon: User },
-      ].map(link => (
-        <Link 
-          key={link.href} 
-          href={link.href} 
-          onClick={() => setSidebarOpen(false)}
-          className={`flex items-center gap-3 p-3 rounded-xl transition ${pathname === link.href ? 'bg-[#DFFF00] text-[rgb(38,47,44)]' : 'hover:bg-white/5'}`}
-        >
-          <link.icon size={20} />
-          {link.label}
-        </Link>
-      ))}
-      <div className="relative">
-        {isLocked ? (
-            <button onClick={() => {setLockedModal(true); setSidebarOpen(false);}} className="flex w-full items-center justify-between gap-3 p-3 rounded-xl hover:bg-white/5 transition opacity-50 cursor-pointer">
-                <span className="flex items-center gap-3"><Briefcase size={20} /> Job Pool</span>
-                <Lock size={16} />
-            </button>
-        ) : (
-            <Link href="/dashboard/job-pool" onClick={() => setSidebarOpen(false)} className={`flex items-center gap-3 p-3 rounded-xl transition ${pathname === '/dashboard/job-pool' ? 'bg-[#DFFF00] text-[rgb(38,47,44)]' : 'hover:bg-white/5'}`}>
-                <Briefcase size={20} />
-                Job Pool
-            </Link>
-        )}
-      </div>
-    </nav>
-  );
-
   return (
     <div className="min-h-screen bg-[rgb(38,47,44)] text-[#E0E6ED] flex">
       <AnimatePresence>
@@ -96,7 +62,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <h2 className="text-xl font-bold text-[#DFFF00]">Deloxe</h2>
             <button onClick={() => setSidebarOpen(false)} className="md:hidden"><X /></button>
         </div>
-        <NavLinks />
+        <NavLinks pathname={pathname} setSidebarOpen={setSidebarOpen} isLocked={isLocked} setLockedModal={setLockedModal} />
       </aside>
 
       {/* Main Content */}
@@ -129,4 +95,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
     </div>
   );
+}
+
+function NavLinks({ pathname, setSidebarOpen, isLocked, setLockedModal }: any) {
+  return (
+    <nav className="space-y-4">
+      {[
+        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/handbook', label: 'My Handbook', icon: BookOpen },
+        { href: '/dashboard/training-hub', label: 'Training Hub', icon: GraduationCap },
+        { href: '/dashboard/profile', label: 'Profile', icon: User },
+      ].map(link => (
+        <Link 
+          key={link.href} 
+          href={link.href} 
+          onClick={() => setSidebarOpen(false)}
+          className={`flex items-center gap-3 p-3 rounded-xl transition ${pathname === link.href ? 'bg-[#DFFF00] text-[rgb(38,47,44)]' : 'hover:bg-white/5'}`}
+        >
+          <link.icon size={20} />
+          {link.label}
+        </Link>
+      ))}
+      <div className="relative">
+        {isLocked ? (
+            <button onClick={() => {setLockedModal(true); setSidebarOpen(false);}} className="flex w-full items-center justify-between gap-3 p-3 rounded-xl hover:bg-white/5 transition opacity-50 cursor-pointer">
+                <span className="flex items-center gap-3"><Briefcase size={20} /> Job Pool</span>
+                <Lock size={16} />
+            </button>
+        ) : (
+            <Link href="/dashboard/job-pool" onClick={() => setSidebarOpen(false)} className={`flex items-center gap-3 p-3 rounded-xl transition ${pathname === '/dashboard/job-pool' ? 'bg-[#DFFF00] text-[rgb(38,47,44)]' : 'hover:bg-white/5'}`}>
+                <Briefcase size={20} />
+                Job Pool
+            </Link>
+        )}
+      </div>
+    </nav>
+  )
 }

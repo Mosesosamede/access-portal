@@ -75,7 +75,7 @@ export default function DashboardPage() {
             </div>
             <div>
                 <h3 className="text-2xl font-bold flex items-center gap-2 mb-2"><BookOpen className="text-[#DFFF00]" /> {applicant.progress_percent}% Complete</h3>
-                <p className="text-gray-400">You're making steady progress. Keep going to unlock the final stages!</p>
+                <p className="text-gray-400">You&apos;re making steady progress. Keep going to unlock the final stages!</p>
             </div>
         </div>
 
