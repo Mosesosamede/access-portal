@@ -37,8 +37,8 @@ export default function TrainingHubPage() {
         </div>
       </div>
       
-      <div className='bg-[rgb(50,60,55)] p-6 md:p-8 rounded-3xl border border-white/10 shadow-xl'>
-        <h3 className='text-xl font-bold mb-8 flex items-center gap-3 text-white'><GraduationCap className='text-[#DFFF00]' /> Available Modules</h3>
+      <div className='bg-[#f7f069] p-6 md:p-8 rounded-3xl border border-white/10 shadow-xl'>
+        <h3 className='text-xl font-bold mb-8 flex items-center gap-3 text-[#1a2321]'><GraduationCap className='text-[#1a2321]' /> Available Modules</h3>
         <div className='space-y-4'>
         {modules.map(m => {
             const locked = isModuleLocked(m.module_number);
@@ -49,7 +49,7 @@ export default function TrainingHubPage() {
                     href={locked ? '#' : `/dashboard/training-hub/${m.module_number}`}
                     className={`block w-full text-left p-5 rounded-2xl flex items-center justify-between border ${locked ? 'opacity-50 cursor-not-allowed bg-white/5 border-transparent' : 'hover:bg-white/10 bg-[rgb(38,47,44)] hover:border-[#DFFF00]/50 border-white/5'} transition-all group`}
                 >
-                    <span className='font-medium group-hover:text-white'>{m.title}</span>
+                    <span className='font-medium group-hover:text-[#1a2321]'>{m.title}</span>
                     {locked ? <Lock size={18} className='text-gray-500' /> : completed ? <Unlock size={18} className="text-green-400" /> : <Unlock size={18} className='text-[#DFFF00]' />}
                 </Link>
             )
