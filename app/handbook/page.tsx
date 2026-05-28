@@ -9,14 +9,18 @@ export default function HandbookPage() {
       .from('applicant-docs')
       .getPublicUrl('Getting_Hired_.pdf');
     
-    // Create a temporary link to trigger download
+    const response = await fetch(data.publicUrl);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    
     const link = document.createElement('a');
-    link.href = data.publicUrl;
+    link.href = url;
     link.setAttribute('download', 'Getting_Hired_.pdf');
-    link.setAttribute('target', '_blank');
     document.body.appendChild(link);
     link.click();
+    
     document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   };
 
   return (
