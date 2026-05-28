@@ -20,23 +20,23 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto px-4 md:px-6 pt-8 pb-12">
       <div className="flex items-center gap-4 mb-8">
-        <Link href="/dashboard" className="p-3 bg-[rgb(50,60,55)] rounded-full hover:bg-white/10 transition flex items-center justify-center">
-          <ArrowLeft size={22} className="text-[#DFFF00]" />
+        <Link href="/dashboard" className="p-3 bg-[#26312f] rounded-full hover:bg-[#dbf0de]/10 transition flex items-center justify-center text-[#dbf0de]">
+          <ArrowLeft size={22} className="text-[#dbf0de]" />
         </Link>
         <h2 className="text-3xl font-bold tracking-tight text-white">Profile</h2>
       </div>
       
-      <div className="bg-[rgb(50,60,55)] p-6 md:p-10 rounded-3xl border border-white/10 shadow-xl space-y-10">
+      <div className="bg-[#26312f] p-6 md:p-10 rounded-3xl border border-[#dbf0de]/10 shadow-xl space-y-10">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               {applicant.passport_photo_url && (
-                  <div className="relative w-36 h-36 flex-shrink-0 rounded-2xl overflow-hidden shadow-lg border-2 border-[#DFFF00]/20">
+                  <div className="relative w-36 h-36 flex-shrink-0 rounded-2xl overflow-hidden shadow-lg border-2 border-[#dbf0de]/20">
                       <Image src={applicant.passport_photo_url} alt="Profile" fill className="object-cover" referrerPolicy="no-referrer" />
                   </div>
               )}
               <div className="text-center sm:text-left flex flex-col gap-2">
                   <h3 className="text-3xl font-bold text-white">{applicant.full_name}</h3>
                   <p className="text-gray-400 font-medium">{applicant.email}</p>
-                  <span className="inline-block mt-1 px-4 py-1.5 rounded-full bg-[#DFFF00]/10 text-xs font-semibold text-[#DFFF00] border border-[#DFFF00]/20">
+                  <span className="inline-block mt-1 px-4 py-1.5 rounded-full bg-[#dbf0de]/10 text-xs font-semibold text-[#dbf0de] border border-[#dbf0de]/20">
                     {applicant.status_tag}
                   </span>
               </div>
@@ -72,18 +72,18 @@ export default function ProfilePage() {
 
 function DetailItem({ label, value }: { label: string; value: string }) {
     return (
-        <div className="bg-[rgb(38,47,44)] p-4 rounded-xl border border-white/5">
-            <p className="text-gray-400 text-xs mb-1 uppercase tracking-wider">{label}</p>
-            <p className="font-semibold text-sm">{value}</p>
+        <div className="bg-[#1a2321] p-4 rounded-xl border border-[#dbf0de]/5">
+            <p className="text-[#dbf0de]/60 text-xs mb-1 uppercase tracking-wider">{label}</p>
+            <p className="font-semibold text-sm text-white">{value}</p>
         </div>
     )
 }
 
 function DocLink({ href, label }: { href: string; label: string }) {
     return (
-        <a href={href} target="_blank" className="flex items-center justify-between p-4 bg-[rgb(38,47,44)] rounded-xl border border-white/5 hover:border-[#DFFF00] transition group">
+        <a href={href} target="_blank" className="flex items-center justify-between p-4 bg-[#1a2321] rounded-xl border border-[#dbf0de]/5 hover:border-[#dbf0de] transition group">
             <span className="text-sm font-semibold">{label}</span>
-            <span className="text-[#DFFF00] text-xs font-bold group-hover:underline">View</span>
+            <span className="text-[#dbf0de] text-xs font-bold group-hover:underline">View</span>
         </a>
     )
 }
