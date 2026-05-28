@@ -7,12 +7,12 @@ export default function HandbookPage() {
     const supabase = getSupabase();
     const { data } = supabase.storage
       .from('applicant-docs')
-      .getPublicUrl('Getting_Hired_.pdf');
+      .getPublicUrl('Get_Hired_.pdf');
     
     // Create a temporary link to trigger download
     const link = document.createElement('a');
     link.href = data.publicUrl;
-    link.setAttribute('download', 'Getting_Hired_.pdf');
+    link.setAttribute('download', 'Get_Hired_.pdf');
     link.setAttribute('target', '_blank');
     document.body.appendChild(link);
     link.click();
