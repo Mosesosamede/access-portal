@@ -36,7 +36,7 @@ export default function ProfilePage() {
               <div className="text-center sm:text-left flex flex-col gap-2">
                   <h3 className="text-3xl font-bold text-white">{applicant.full_name}</h3>
                   <p className="text-gray-400 font-medium">{applicant.email}</p>
-                  <span className="inline-block mt-1 px-4 py-1.5 rounded-full bg-[#dbf0de]/10 text-xs font-semibold text-[#dbf0de] border border-[#dbf0de]/20">
+                  <span className="inline-block mt-1 px-4 py-1.5 rounded-full bg-[#f7f069] text-xs font-semibold text-black border border-[#f7f069]/20">
                     {applicant.status_tag}
                   </span>
               </div>
@@ -81,10 +81,9 @@ function DetailItem({ label, value }: { label: string; value: string }) {
 
 function DocLink({ href, label }: { href: string; label: string }) {
     return (
-        <a href={href} target="_blank" className="flex items-center justify-between p-4 bg-[#1a2321] rounded-xl border border-[#dbf0de]/5 hover:border-[#dbf0de] transition group">
-            <span className="text-sm font-semibold">{label}</span>
-            <span className="text-[#dbf0de] text-xs font-bold group-hover:underline">View</span>
+        <a href={href} target="_blank" className="flex items-center justify-between p-4 bg-[#f7f069] rounded-xl border transition group">
+            <span className="text-sm font-semibold text-black">{label}</span>
+            <span className="text-black text-xs font-bold group-hover:underline">View</span>
         </a>
     )
 }
-
