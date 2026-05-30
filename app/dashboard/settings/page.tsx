@@ -29,7 +29,7 @@ export default function SettingsPage() {
            {label: 'Institution', value: applicant.institution_name},
            {label: 'Course', value: applicant.course_of_study},
            {label: 'Graduation Year', value: applicant.graduation_year},
-           {label: 'Skills', value: applicant.skills},
+           {label: 'Skills', value: Array.isArray(applicant.skills) ? applicant.skills.join(', ') : typeof applicant.skills === 'string' ? applicant.skills : JSON.stringify(applicant.skills || '')},
            {label: 'Competitive Edge', value: applicant.competitive_edge}].map(item => (
             <div key={item.label} className='flex justify-between'><span className='text-gray-400'>{item.label}</span><span>{item.value}</span></div>
         ))}
