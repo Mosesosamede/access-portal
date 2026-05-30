@@ -41,14 +41,14 @@ export default function SkillsPage() {
             <div className="flex flex-wrap gap-2">
                 {skillsArray.map((skill: string, index: number) => (
                     <span key={index} className="px-3 py-1 bg-[#DFFF00] text-[rgb(38,47,44)] rounded-full font-bold text-sm">
-                        {skill}
+                        {String(skill || '')}
                     </span>
                 ))}
             </div>
           </div>
           <div className="border-t border-white/10 pt-6">
             <h3 className="text-xl font-bold mb-4">Competitive Edge</h3>
-            <p className="text-gray-300">{applicant.competitive_edge}</p>
+            <p className="text-gray-300">{applicant.competitive_edge || 'No competitive edge provided.'}</p>
           </div>
       </div>
     </>
