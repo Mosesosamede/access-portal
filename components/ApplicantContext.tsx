@@ -39,6 +39,14 @@ export interface TrainingModule {
   pdf_path: string;
 }
 
+const MODULE_CONFIGS = [
+  { module_number: 1, title: 'Career Foundation', pdf_path: 'm1_foundation.pdf' },
+  { module_number: 2, title: 'Workplace Readiness', pdf_path: 'm2_readiness.pdf' },
+  { module_number: 3, title: 'Productivity Skills', pdf_path: 'm3_productivity.pdf' },
+  { module_number: 4, title: 'Digital Skills', pdf_path: 'm4_digital.pdf' },
+  { module_number: 5, title: 'Internship Success Toolkit', pdf_path: 'm5_toolkit.pdf' },
+];
+
 export interface TrainingLog {
   id: string;
   applicant_id: string;
@@ -82,7 +90,11 @@ export const ApplicantProvider = ({ children }: { children: ReactNode }) => {
         
         // Fetch modules
         const { data: modulesData } = await supabase.from('training_modules').select('*').order('module_number');
-        setModules(modulesData || []);
+        const sortedModules = (modulesData || []).map(m => {
+            const config = MODULE_CONFIGS.find(c => c.module_number === m.module_number);
+            return config ? { ...m, ...config } : m;
+        }).sort((a,b) => a.module_number - b.module_number);
+        setModules(sortedModules);
 
         // Fetch logs
         const { data: logsData } = await supabase.from('training_logs').select('*').eq('applicant_id', applicantData.id);
