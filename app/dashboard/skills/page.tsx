@@ -15,7 +15,22 @@ export default function SkillsPage() {
 
   if (!applicant) return <div className="text-red-400">Error loading data.</div>;
 
-  const skillsArray = Array.isArray(applicant.skills) ? applicant.skills : typeof applicant.skills === 'string' ? JSON.parse(applicant.skills) : [];
+  let skillsArray: string[] = [];
+  if (Array.isArray(applicant.skills)) {
+      skillsArray = applicant.skills;
+  } else if (typeof applicant.skills === 'string') {
+      try {
+          const parsed = JSON.parse(applicant.skills);
+          if (Array.isArray(parsed)) {
+              skillsArray = parsed;
+          } else if (typeof parsed === 'object' && parsed !== null) {
+              skillsArray = Object.values(parsed).map(String);
+          }
+      } catch (e) {
+          console.error("Failed to parse skills:", e);
+          skillsArray = [];
+      }
+  }
 
   return (
     <>
