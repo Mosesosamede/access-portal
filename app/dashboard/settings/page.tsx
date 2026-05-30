@@ -29,7 +29,18 @@ export default function SettingsPage() {
            {label: 'Institution', value: applicant.institution_name},
            {label: 'Course', value: applicant.course_of_study},
            {label: 'Graduation Year', value: applicant.graduation_year},
-           {label: 'Skills', value: Array.isArray(applicant.skills) ? applicant.skills.join(', ') : typeof applicant.skills === 'string' ? applicant.skills : JSON.stringify(applicant.skills || '')},
+           {label: 'Skills', value: (() => {
+               const s = applicant.skills;
+               if (Array.isArray(s)) return s.join(', ');
+               if (typeof s === 'string') {
+                   try {
+                       const p = JSON.parse(s);
+                       return Array.isArray(p) ? p.join(', ') : (typeof p === 'object' && p !== null ? Object.values(p).join(', ') : s);
+                   } catch { return s; }
+               }
+               if (typeof s === 'object' && s !== null) return Object.values(s).join(', ');
+               return '';
+           })()},
            {label: 'Competitive Edge', value: applicant.competitive_edge}].map(item => (
             <div key={item.label} className='flex justify-between'><span className='text-gray-400'>{item.label}</span><span>{item.value}</span></div>
         ))}
@@ -45,3 +56,4 @@ export default function SettingsPage() {
     </DashboardLayout>
   );
 }
+
