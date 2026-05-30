@@ -31,13 +31,13 @@ export default function SetupAccountPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0A192F]">
-        <div className="w-full max-w-md bg-[#112240] p-8 rounded-3xl border border-white/10 shadow-2xl">
-            <h2 className="text-2xl font-bold text-center mb-6 text-[#DFFF00]">Create Your Password</h2>
+    <div className="min-h-screen flex items-center justify-center bg-[#1a2321]">
+        <div className="w-full max-w-md bg-[#26312f] p-8 rounded-3xl border border-white/10 shadow-2xl">
+            <h2 className="text-2xl font-bold text-center mb-6 text-[#dbf0de]">Create Your Password</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <input type="email" value={email} readOnly className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-gray-400" />
                 <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter new password" required className="w-full p-3 rounded-xl bg-white/5 border border-white/10" />
-                <button type="submit" disabled={loading} className="w-full bg-[#d9f0dd] text-[#0A192F] p-3 rounded-xl font-bold hover:scale-105 transition-transform">
+                <button type="submit" disabled={loading} className="w-full bg-[#dbf0de] text-[#1a2321] p-3 rounded-xl font-bold hover:scale-105 transition-transform">
                     {loading ? 'Setting up...' : 'Setup Account'}
                 </button>
             </form>

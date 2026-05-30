@@ -39,9 +39,9 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6 bg-[#0A192F]">
+    <main className="min-h-screen flex items-center justify-center p-6 bg-[#1a2321]">
       <div className="bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 p-12 max-w-md w-full shadow-2xl">
-        <h1 className="text-3xl font-bold text-[#d9f0dd] mb-6 text-center">Welcome Back</h1>
+        <h1 className="text-3xl font-bold text-[#dbf0de] mb-6 text-center">Welcome Back</h1>
         <p className="text-white text-center mb-8">Enter your credentials to access your dashboard.</p>
         
         {errorMessage && (
@@ -58,7 +58,7 @@ export default function LoginPage() {
             value={email} 
             onChange={(e) => setEmail(e.target.value)} 
             placeholder="Email Address" 
-            className="w-full bg-[#0A192F]/50 p-4 rounded-xl border border-white/10 text-white focus:border-cyan-500 transition-all outline-none" 
+            className="w-full bg-[#1a2321]/50 p-4 rounded-xl border border-white/10 text-white focus:border-[#dbf0de] transition-all outline-none" 
             required
           />
           <input 
@@ -68,7 +68,7 @@ export default function LoginPage() {
             value={password} 
             onChange={(e) => setPassword(e.target.value)} 
             placeholder="Password" 
-            className="w-full bg-[#0A192F]/50 p-4 rounded-xl border border-white/10 text-white focus:border-cyan-500 transition-all outline-none" 
+            className="w-full bg-[#1a2321]/50 p-4 rounded-xl border border-white/10 text-white focus:border-[#dbf0de] transition-all outline-none" 
             required
           />
           <button 
@@ -76,7 +76,7 @@ export default function LoginPage() {
             id="login-submit"
             name="login-submit"
             disabled={loading} 
-            className="w-full px-6 py-4 bg-[#DFFF00] text-[#0A192F] rounded-full font-bold hover:shadow-lg transition-all hover:scale-105"
+            className="w-full px-6 py-4 bg-[#dbf0de] text-[#1a2321] rounded-full font-bold hover:shadow-lg transition-all hover:scale-105"
           >
             {loading ? 'Logging in...' : 'Sign In'}
           </button>

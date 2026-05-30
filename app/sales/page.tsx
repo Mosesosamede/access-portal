@@ -15,7 +15,7 @@ export default function SalesHubPage() {
         <div className="absolute top-[10%] left-[10%] w-64 h-64 bg-[#d9f0dd] rounded-full mix-blend-screen filter blur-3xl animate-pulse"></div>
         <div className="absolute bottom-[10%] right-[10%] w-96 h-96 bg-[#DFFF00] rounded-full mix-blend-screen filter blur-3xl animate-pulse"></div>
         <div className="absolute top-[50%] left-[30%] w-48 h-48 bg-purple-500 rounded-full mix-blend-screen filter blur-3xl animate-pulse delay-700"></div>
-        <div className="absolute bottom-[20%] left-[20%] w-72 h-72 bg-blue-500 rounded-full mix-blend-screen filter blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-[20%] left-[20%] w-72 h-72 bg-[#dbf0de] rounded-full mix-blend-screen filter blur-3xl animate-pulse delay-1000"></div>
       </div>
 
       <div className="relative z-10 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 flex flex-col md:flex-row-reverse gap-8 md:gap-12 p-6 md:p-12 items-center max-w-5xl mx-auto shadow-2xl">

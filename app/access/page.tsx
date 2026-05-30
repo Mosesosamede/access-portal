@@ -56,7 +56,7 @@ export default function AccessPortalPage() {
           <div className="space-y-6 text-center">
             <p className="text-lg md:text-xl text-amber-400">This code has already been used.</p>
             <p className="text-base md:text-lg">Please get the book again to generate a new valid access code.</p>
-            <a href="/sales" className="inline-block px-6 py-3 md:px-8 md:py-4 bg-[#DFFF00] text-[#0A192F] rounded-full font-bold text-base md:text-lg hover:shadow-lg transition-all hover:scale-105">Get the Book</a>
+            <a href="/sales" className="inline-block px-6 py-3 md:px-8 md:py-4 bg-[#dbf0de] text-[#1a2321] rounded-full font-bold text-base md:text-lg hover:shadow-lg transition-all hover:scale-105">Get the Book</a>
           </div>
         ) : !isVerified ? (
           <div className="space-y-6">
@@ -66,12 +66,12 @@ export default function AccessPortalPage() {
               value={code} 
               onChange={(e) => setCode(e.target.value)}
               placeholder="Enter Access Code"
-              className="w-full bg-[#0A192F]/50 p-4 rounded-xl border border-white/10 focus:border-[#d9f0dd] focus:outline-none transition-all text-lg"
+              className="w-full bg-[#1a2321]/50 p-4 rounded-xl border border-white/10 focus:border-[#d9f0dd] focus:outline-none transition-all text-lg"
             />
             <button 
               onClick={handleVerify} 
               disabled={loading}
-              className="w-full md:w-auto px-6 py-3 md:px-8 md:py-4 bg-[#DFFF00] text-[#0A192F] rounded-xl font-bold text-lg disabled:opacity-50 hover:shadow-lg transition-all hover:scale-105"
+              className="w-full md:w-auto px-6 py-3 md:px-8 md:py-4 bg-[#dbf0de] text-[#1a2321] rounded-xl font-bold text-lg disabled:opacity-50 hover:shadow-lg transition-all hover:scale-105"
             >
               {loading ? 'Verifying...' : 'Start Your Journey'}
             </button>

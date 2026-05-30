@@ -128,7 +128,7 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
           subject: 'Welcome to Deloxe HR!',
           html: `
             <div style="font-family: sans-serif; padding: 20px; background-color: #f4f4f4;">
-              <h1 style="color: #0A192F;">Welcome to Deloxe HR, ${data.full_name}!</h1>
+              <h1 style="color: #1a2321;">Welcome to Deloxe HR, ${data.full_name}!</h1>
               <p>We are excited to have you in our talent ecosystem.</p>
               <p>Your journey has officially begun.</p>
               <br/>
@@ -285,7 +285,7 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
                 <h2 className="text-2xl font-bold">Step 10: Final Review & Submit</h2>
                 <input type="password" {...register('password')} placeholder="Create a password to secure your account" className="w-full bg-glass p-3 rounded border border-white/20" />
                 <p className="text-sm text-gray-400">Review your information before submitting.</p>
-                <button type="submit" disabled={loading} className="bg-[#DFFF00] text-[#0A192F] w-full px-6 py-4 rounded-full font-bold">
+                <button type="submit" disabled={loading} className="bg-[#dbf0de] text-[#1a2321] w-full px-6 py-4 rounded-full font-bold">
                   {loading ? 'Submitting...' : 'Submit Application'}
                 </button>
             </div>
@@ -302,7 +302,7 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
           <h2 className="text-2xl font-bold text-[#d9f0dd]">Welcome to the Deloxe Network, {registeredUser.name}! 🎉</h2>
           <p className="text-gray-300">Your professional journey has officially begun.</p>
           <p className="text-gray-300">A confirmation has been sent to {registeredUser.email}. Please keep your password secure.</p>
-          <button type="button" onClick={() => window.location.href = '/dashboard'} className="w-full px-6 py-4 bg-[#DFFF00] text-[#0A192F] rounded-full font-bold hover:shadow-lg transition-all hover:scale-105">
+          <button type="button" onClick={() => window.location.href = '/dashboard'} className="w-full px-6 py-4 bg-[#dbf0de] text-[#1a2321] rounded-full font-bold hover:shadow-lg transition-all hover:scale-105">
             Proceed to My Dashboard
           </button>
         </div>
@@ -320,7 +320,7 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
           </AnimatePresence>
           <div className="flex justify-between mt-8">
             <button type="button" disabled={step === 1 || loading} onClick={prevStep} className="px-6 py-3 bg-gray-700 text-white rounded-full font-bold disabled:opacity-50">Back</button>
-            {step < 10 && <button type="button" onClick={nextStep} className="px-6 py-3 bg-[#d9f0dd] text-[#0A192F] rounded-full font-bold">Next</button>}
+            {step < 10 && <button type="button" onClick={nextStep} className="px-6 py-3 bg-[#dbf0de] text-[#1a2321] rounded-full font-bold">Next</button>}
           </div>
         </>
       )}

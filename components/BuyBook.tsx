@@ -88,9 +88,9 @@ export default function BuyBook() {
     return (
         <div className="bg-white/5 backdrop-blur-md p-6 md:p-8 rounded-3xl border border-white/10 text-center shadow-2xl">
             <div className="text-5xl mb-4 text-green-500">✅</div>
-            <h2 className="text-xl md:text-2xl font-bold mb-4 text-[#DFFF00]">Payment successful!</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-4 text-[#dbf0de]">Payment successful!</h2>
             <p className="text-sm mb-6">Check your email for access details.</p>
-            <a href="https://access.deloxehr.com" className="inline-block bg-[#d9f0dd] text-[#0A192F] px-6 py-3 md:px-8 md:py-4 rounded-full font-bold hover:scale-105 transition-transform text-sm md:text-base">Go to Portal</a>
+            <a href="https://access.deloxehr.com" className="inline-block bg-[#dbf0de] text-[#1a2321] px-6 py-3 md:px-8 md:py-4 rounded-full font-bold hover:scale-105 transition-transform text-sm md:text-base">Go to Portal</a>
         </div>
     )
   }
@@ -98,19 +98,19 @@ export default function BuyBook() {
   return (
     <div className="bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 p-6 md:p-8 w-full max-w-sm shadow-2xl">
         <div className="flex justify-between items-center mb-6">
-            <span className="text-xl md:text-2xl font-bold text-[#DFFF00]">{currency} {PRICES[currency]}</span>
-            <select value={currency} onChange={(e) => setCurrency(e.target.value as keyof typeof PRICES)} className="bg-[#0A192F] p-2 rounded-xl text-white border border-gray-700">
+            <span className="text-xl md:text-2xl font-bold text-[#dbf0de]">{currency} {PRICES[currency]}</span>
+            <select value={currency} onChange={(e) => setCurrency(e.target.value as keyof typeof PRICES)} className="bg-[#1a2321] p-2 rounded-xl text-white border border-gray-700">
                 {Object.keys(PRICES).map(c => <option key={c} value={c}>{c}</option>)}
             </select>
         </div>
-        <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#0A192F] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#d9f0dd] focus:outline-none transition-all" />
-        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-[#0A192F] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#d9f0dd] focus:outline-none transition-all" />
-        <input type="tel" placeholder="Phone Number" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="w-full bg-[#0A192F] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#d9f0dd] focus:outline-none transition-all" />
+        <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#1a2321] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#d9f0dd] focus:outline-none transition-all" />
+        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-[#1a2321] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#d9f0dd] focus:outline-none transition-all" />
+        <input type="tel" placeholder="Phone Number" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="w-full bg-[#1a2321] p-3 md:p-4 rounded-xl mb-4 border border-transparent focus:border-[#d9f0dd] focus:outline-none transition-all" />
         
         <button 
             onClick={handleBuy}
             disabled={loading}
-            className="w-full bg-[#DFFF00] text-[#0A192F] px-6 py-3 md:px-8 md:py-4 rounded-full font-bold uppercase tracking-widest hover:scale-105 transition-transform text-sm md:text-base"
+            className="w-full bg-[#dbf0de] text-[#1a2321] px-6 py-3 md:px-8 md:py-4 rounded-full font-bold uppercase tracking-widest hover:scale-105 transition-transform text-sm md:text-base"
         >
             {loading ? 'Processing...' : `Buy Handbook`}
         </button>
