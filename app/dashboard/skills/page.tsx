@@ -1,6 +1,7 @@
 'use client';
 import { useApplicant } from '@/components/ApplicantContext';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export default function SkillsPage() {
   const { applicant, isLoading } = useApplicant();
@@ -33,11 +34,16 @@ export default function SkillsPage() {
   }
 
   return (
-    <>
-      <h2 className="text-3xl font-bold mb-6 text-[#DFFF00]">Skills</h2>
+    <div className="max-w-4xl mx-auto px-4 md:px-6 pt-8 pb-12">
+      <div className="flex items-center gap-4 mb-8">
+        <Link href="/dashboard" className="p-3 bg-[#26312f] rounded-full hover:bg-[#dbf0de]/10 transition flex items-center justify-center text-[#dbf0de]">
+          <ArrowLeft size={22} className="text-[#dbf0de]" />
+        </Link>
+        <h2 className="text-3xl font-bold tracking-tight text-white">Skills</h2>
+      </div>
       <div className="bg-[rgb(50,60,55)] p-8 rounded-3xl border border-white/10 shadow-lg space-y-6">
           <div>
-            <h3 className="text-xl font-bold mb-4">Core Skills</h3>
+            <h3 className="text-xl font-bold mb-4 text-[#DFFF00]">Core Skills</h3>
             <div className="flex flex-wrap gap-2">
                 {skillsArray.map((skill: string, index: number) => (
                     <span key={index} className="px-3 py-1 bg-[#DFFF00] text-[rgb(38,47,44)] rounded-full font-bold text-sm">
@@ -47,10 +53,10 @@ export default function SkillsPage() {
             </div>
           </div>
           <div className="border-t border-white/10 pt-6">
-            <h3 className="text-xl font-bold mb-4">Competitive Edge</h3>
+            <h3 className="text-xl font-bold mb-4 text-[#DFFF00]">Competitive Edge</h3>
             <p className="text-gray-300">{applicant.competitive_edge || 'No competitive edge provided.'}</p>
           </div>
       </div>
-    </>
+    </div>
   );
 }
