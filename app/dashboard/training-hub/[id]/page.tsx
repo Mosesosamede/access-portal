@@ -21,9 +21,10 @@ export default function ModulePage() {
     if (moduleData) {
         const fetchPdf = async () => {
             const supabase = getSupabase();
+            const path = moduleData.pdf_path.startsWith('modules/') ? moduleData.pdf_path : `modules/${moduleData.pdf_path}`;
             const { data } = supabase.storage
               .from('applicant-docs')
-              .getPublicUrl(moduleData.pdf_path);
+              .getPublicUrl(path);
             setPdfUrl(data.publicUrl);
         };
         fetchPdf();
