@@ -5,6 +5,9 @@ import { Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { Document, Page, pdfjs } from 'react-pdf';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function ModulePage() {
   const { modules, completedModules, completeModule, isLoading } = useApplicant();
@@ -55,9 +58,11 @@ export default function ModulePage() {
             )}
         </div>
         
-        <div className="bg-[rgb(50,60,55)] p-6 rounded-3xl border border-white/10 shadow-xl min-h-[600px]">
+        <div className="bg-[rgb(50,60,55)] p-6 rounded-3xl border border-white/10 shadow-xl min-h-[600px] flex justify-center">
             {pdfUrl ? (
-                <iframe src={pdfUrl} className='w-full h-[700px] rounded-2xl' />
+                <Document file={pdfUrl} loading={<Loader2 size={48} className="animate-spin text-[#DFFF00]" />}>
+                  <Page pageNumber={1} renderTextLayer={false} renderAnnotationLayer={false} width={800} />
+                </Document>
             ) : (
                 <div className="flex items-center justify-center h-[500px]">
                     <Loader2 size={48} className="animate-spin text-[#DFFF00]" />
