@@ -53,14 +53,23 @@ export interface TrainingLog {
   module_number: number;
 }
 
+export interface QuizSubmission {
+  id?: string;
+  applicant_id: string;
+  module_number: number;
+  score: number;
+}
+
 interface ApplicantContextType {
   applicant: Applicant | null;
   modules: TrainingModule[];
   completedModules: TrainingLog[];
+  quizSubmissions: QuizSubmission[];
   isLoading: boolean;
   user: User | null;
   refreshApplicantData: () => Promise<void>;
   completeModule: (moduleNumber: number) => Promise<void>;
+  submitQuiz: (moduleNumber: number, score: number) => Promise<void>;
 }
 
 const ApplicantContext = createContext<ApplicantContextType | undefined>(undefined);
@@ -69,6 +78,7 @@ export const ApplicantProvider = ({ children }: { children: ReactNode }) => {
   const [applicant, setApplicant] = useState<Applicant | null>(null);
   const [modules, setModules] = useState<TrainingModule[]>([]);
   const [completedModules, setCompletedModules] = useState<TrainingLog[]>([]);
+  const [quizSubmissions, setQuizSubmissions] = useState<QuizSubmission[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -99,6 +109,24 @@ export const ApplicantProvider = ({ children }: { children: ReactNode }) => {
         // Fetch logs
         const { data: logsData } = await supabase.from('training_logs').select('*').eq('applicant_id', applicantData.id);
         setCompletedModules(logsData || []);
+
+        // Fetch quiz submissions with local fallback
+        const { data: qData } = await supabase.from('quiz_submissions').select('*').eq('applicant_id', applicantData.id);
+        if (qData) {
+            setQuizSubmissions(qData);
+            localStorage.setItem(`local_quiz_submissions_${applicantData.id}`, JSON.stringify(qData));
+        } else {
+            const fallbackStr = localStorage.getItem(`local_quiz_submissions_${applicantData.id}`);
+            if (fallbackStr) {
+                try {
+                    setQuizSubmissions(JSON.parse(fallbackStr));
+                } catch {
+                    setQuizSubmissions([]);
+                }
+            } else {
+                setQuizSubmissions([]);
+            }
+        }
     } else {
         console.error('Error fetching applicant data:', applicantError);
         setApplicant(null);
@@ -122,6 +150,40 @@ export const ApplicantProvider = ({ children }: { children: ReactNode }) => {
     // 3. Update applicant
     await supabase.from('applicants').update({ progress_percent: newProgress }).eq('id', applicant.id);
     
+    await fetchAllData(applicant.user_id);
+  };
+
+  const submitQuiz = async (moduleNumber: number, score: number) => {
+    if (!applicant) return;
+    const supabase = getSupabase();
+
+    const newSub = { applicant_id: applicant.id, module_number: moduleNumber, score: score };
+
+    // Try to save to DB
+    const { error: insertError } = await supabase.from('quiz_submissions').insert(newSub);
+
+    let currentList = [...quizSubmissions];
+    if (!currentList.some(s => s.module_number === moduleNumber)) {
+        currentList.push(newSub);
+    }
+
+    localStorage.setItem(`local_quiz_submissions_${applicant.id}`, JSON.stringify(currentList));
+    setQuizSubmissions(currentList);
+
+    // Increment progress_percent by 20 and advance stage to next milestone when completion hits 100%
+    const quizCount = currentList.length;
+    const calculatedProgress = Math.min(100, quizCount * 20);
+
+    let nextStage = applicant.current_stage;
+    if (quizCount === 5 && (parseInt(applicant.current_stage) || 1) <= 3) {
+        nextStage = '4'; // "Final Exam" (next milestone/stage in progression)
+    }
+
+    await supabase.from('applicants').update({
+        progress_percent: calculatedProgress,
+        current_stage: nextStage
+    }).eq('id', applicant.id);
+
     await fetchAllData(applicant.user_id);
   };
 
@@ -156,7 +218,7 @@ export const ApplicantProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <ApplicantContext.Provider value={{ applicant, modules, completedModules, isLoading, user, refreshApplicantData: () => user ? fetchAllData(user.id) : Promise.resolve(), completeModule }}>
+    <ApplicantContext.Provider value={{ applicant, modules, completedModules, quizSubmissions, isLoading, user, refreshApplicantData: () => user ? fetchAllData(user.id) : Promise.resolve(), completeModule, submitQuiz }}>
       {children}
     </ApplicantContext.Provider>
   );

@@ -10,7 +10,7 @@ import { useApplicant } from '@/components/ApplicantContext';
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { applicant, isLoading, user } = useApplicant();
+  const { applicant, quizSubmissions, isLoading, user } = useApplicant();
   const [profileOpen, setProfileOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [lockedModal, setLockedModal] = useState(false);
@@ -37,7 +37,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/login');
   };
 
-  const isLocked = !applicant || applicant.progress_percent < 100;
+  const isLocked = !applicant || quizSubmissions.length < 5;
 
   return (
     <div className="min-h-screen bg-[#1a2321] text-[#E0E6ED] flex">
@@ -118,7 +118,7 @@ function NavLinks({ pathname, setSidebarOpen, isLocked, setLockedModal }: any) {
       ))}
       <div className="relative">
         {isLocked ? (
-            <button onClick={() => {setLockedModal(true); setSidebarOpen(false);}} className="flex w-full items-center justify-between gap-3 p-3 rounded-xl hover:bg-white/5 transition opacity-50 cursor-pointer">
+            <button onClick={() => {setLockedModal(true); setSidebarOpen(false);}} className="flex w-full items-center justify-between gap-3 p-3 rounded-xl hover:bg-white/5 transition opacity-40 cursor-not-allowed">
                 <span className="flex items-center gap-3"><Briefcase size={20} /> Job Pool</span>
                 <Lock size={16} />
             </button>
