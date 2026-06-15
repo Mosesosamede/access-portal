@@ -1,11 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useApplicant } from '@/components/ApplicantContext';
-import { Loader2, ArrowLeft, GraduationCap, CheckCircle2, Play, Lock, AlertCircle } from 'lucide-react';
+import { Loader2, ArrowLeft, GraduationCap, CheckCircle2, Play, Lock, AlertCircle, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import ReactMarkdown from "react-markdown";
 import { motion } from 'motion/react';
+import Markdown from 'react-markdown';
 
 export default function ModulePage() {
   const { modules, completedModules, quizSubmissions, isLoading, completeModule, applicant } = useApplicant();
@@ -97,7 +97,105 @@ export default function ModulePage() {
     );
   }
 
-  
+  const splitIntoSections = (content: string) => {
+    if (!content) return [];
+    // Split by h2 headings, keeping the heading with its body using a lookahead
+    const parts = content.split(/(?=^##\s+)/m);
+    return parts.map((part, index) => {
+      const text = part.trim();
+      return {
+        id: index,
+        text,
+        isIntro: index === 0 && !text.startsWith('##')
+      };
+    }).filter(p => p.text);
+  };
+
+  const MarkdownComponents = {
+    h1: ({ children, ...props }: any) => (
+      <h1 className="text-3xl font-extrabold text-white mt-2 mb-6 font-sans tracking-tight leading-snug" {...props}>
+        {children}
+      </h1>
+    ),
+    h2: ({ children, ...props }: any) => (
+      <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-3 border-b border-white/10 pb-4 mb-6" {...props}>
+        <span className="w-2.5 h-7 bg-[#DFFF00] rounded-md inline-block flex-shrink-0"></span>
+        <span>{children}</span>
+      </h2>
+    ),
+    h3: ({ children, ...props }: any) => (
+      <h3 className="text-xl font-bold text-[#DFFF00] mt-8 mb-4 border-l-4 border-emerald-400 pl-3" {...props}>
+        {children}
+      </h3>
+    ),
+    h4: ({ children, ...props }: any) => (
+      <h4 className="text-lg font-bold text-gray-200 mt-6 mb-3" {...props}>
+        {children}
+      </h4>
+    ),
+    p: ({ children, ...props }: any) => {
+      const text = String(children || '');
+      if (text.startsWith('NOTE:') || text.startsWith('Note:')) {
+        return (
+          <div className="my-6 p-5 rounded-2xl border border-blue-500/10 bg-blue-500/5 text-blue-200 text-sm flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 flex-shrink-0 text-blue-400 mt-0.5" />
+            <div>
+              <span className="font-bold text-blue-400">Note:</span> {text.replace(/^(NOTE|Note):\s*/, '')}
+            </div>
+          </div>
+        );
+      }
+      if (text.startsWith('TIP:') || text.startsWith('Tip:')) {
+        return (
+          <div className="my-6 p-5 rounded-2xl border border-[#DFFF00]/10 bg-[#DFFF00]/5 text-gray-200 text-sm flex items-start gap-3">
+            <Sparkles className="w-5 h-5 flex-shrink-0 text-[#DFFF00] mt-0.5" />
+            <div>
+              <span className="font-bold text-[#DFFF00]">Tip:</span> {text.replace(/^(TIP|Tip):\s*/, '')}
+            </div>
+          </div>
+        );
+      }
+      return (
+        <p className="text-gray-300 leading-relaxed text-base md:text-lg mb-6" {...props}>
+          {children}
+        </p>
+      );
+    },
+    ul: ({ children, ...props }: any) => (
+      <ul className="list-none pl-0 space-y-4 mb-8" {...props}>
+        {children}
+      </ul>
+    ),
+    ol: ({ children, ...props }: any) => (
+      <ol className="list-decimal pl-6 space-y-4 mb-8 font-sans text-gray-300 leading-relaxed text-base" {...props}>
+        {children}
+      </ol>
+    ),
+    li: ({ children, ...props }: any) => {
+      return (
+        <li className="flex items-start gap-3.5 text-gray-300 leading-relaxed text-base pl-1" {...props}>
+          <CheckCircle2 className="w-5 h-5 text-[#DFFF00] mt-1 flex-shrink-0" />
+          <span className="flex-1">{children}</span>
+        </li>
+      );
+    },
+    strong: ({ children, ...props }: any) => (
+      <strong className="text-white font-black bg-[#DFFF00]/10 text-[#DFFF00] px-1.5 py-0.5 rounded border border-[#DFFF00]/10" {...props}>
+        {children}
+      </strong>
+    ),
+    em: ({ children, ...props }: any) => (
+      <em className="text-gray-100 italic font-medium" {...props}>
+        {children}
+      </em>
+    ),
+    code: ({ children, ...props }: any) => (
+      <code className="bg-white/10 px-2 py-0.5 rounded font-mono text-xs text-[#DFFF00]" {...props}>
+        {children}
+      </code>
+    )
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 15 }}
@@ -120,28 +218,57 @@ export default function ModulePage() {
         </div>
       </div>
       
-      <div className="bg-[rgb(50,60,55)] p-6 md:p-10 rounded-3xl border border-white/10 shadow-2xl flex flex-col">
-        {/* Module Text Content */}
-        <article className="prose
-prose-invert
-prose-lg
-max-w-none
-prose-headings:text-white
-prose-headings:font-bold
-prose-p:text-gray-300
-prose-li:text-gray-300
-prose-strong:text-[#DFFF00]
-prose-a:text-[#DFFF00]
-border-b
-border-white/10
-pb-10">
-             <ReactMarkdown>
-                 {moduleData.content}
-             </ReactMarkdown>
-        </article>
+      <div className="space-y-8 flex flex-col">
+        {/* Module Header Overview Card */}
+        <div className="bg-gradient-to-r from-[#212c29] to-[#17201e] p-6 md:p-8 rounded-3xl border border-white/10 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#DFFF00]/10 text-[#DFFF00] border border-[#DFFF00]/20">
+                COURSE MODULE {moduleNumber}
+              </span>
+              <span className="text-xs text-gray-400 font-mono">
+                {moduleData.content ? `${Math.ceil(moduleData.content.split(' ').length / 200)} min read` : 'Fast study'}
+              </span>
+            </div>
+            <h3 className="text-2xl font-bold text-white tracking-tight">{moduleData.title}</h3>
+            <p className="text-sm text-gray-400">
+              Read carefully, engage with concepts, and complete the quiz challenge to proceed.
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            {isCompleted ? (
+              <span className="px-4 py-2 rounded-2xl bg-green-500/10 text-green-400 font-bold text-xs border border-green-400/20 flex items-center gap-1.5">
+                <CheckCircle2 size={16} /> MODULE READ
+              </span>
+            ) : (
+              <span className="px-4 py-2 rounded-2xl bg-[#DFFF00]/10 text-[#DFFF00] font-bold text-xs border border-[#DFFF00]/20 flex items-center gap-1.5">
+                <GraduationCap size={16} className="animate-bounce" /> ACTIVE MODULE
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Section Cards */}
+        {splitIntoSections(moduleData.content).map((section) => (
+          <div 
+            key={section.id} 
+            className={`transition-all duration-300 rounded-3xl p-6 md:p-10 shadow-2xl border ${
+              section.isIntro 
+                ? 'bg-[#1b2523] border-white/10' 
+                : 'bg-[#1e2a27] border-white/10 hover:border-[#DFFF00]/25'
+            }`}
+          >
+            <article className="prose prose-invert max-w-none">
+              <Markdown components={MarkdownComponents}>
+                {section.text}
+              </Markdown>
+            </article>
+          </div>
+        ))}
 
         {/* Dynamic Interactive Completion Footer Button Flow */}
-        <div className="mt-10 flex flex-col items-center justify-center w-full pt-4 text-center">
+        <div className="mt-6 flex flex-col items-center justify-center w-full pt-4 text-center bg-[#26312f] p-8 md:p-10 rounded-3xl border border-white/10">
           {hasSubmitted ? (
             <div className="space-y-4">
               <div className="flex items-center justify-center gap-3 text-green-400 font-bold text-lg bg-green-500/10 px-6 py-3 rounded-2xl border border-green-500/20 shadow-inner">
@@ -173,7 +300,7 @@ pb-10">
           ) : (
             <div className="space-y-4 w-full max-w-md animate-fade-in">
               <p className="text-gray-400 text-sm">
-                Please review this module carefully before marking it as complete. Once completed, you will not be able to revisit this lesson
+                Ensure you read the document completely before marking.
               </p>
               <button 
                 onClick={handleMarkComplete} 
