@@ -17,7 +17,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Waiting for people to find you on search engines"
       ],
       correct_answer: "1",
-      point: 5
+      point: 1
     },
     {
       question_text: "When crafting a professional resume, which of the following is most crucial?",
@@ -28,7 +28,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Making the document as long as possible to show expertise"
       ],
       correct_answer: "2",
-      point: 5
+      point: 1
     },
     {
       question_text: "What is the purpose of a professional cover letter?",
@@ -39,7 +39,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "To explain why your previous employers were completely wrong"
       ],
       correct_answer: "2",
-      point: 5
+      point: 1
     },
     {
       question_text: "Which of the following defines 'Career Growth'?",
@@ -50,7 +50,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Changing jobs as frequently as possible to increase title rank"
       ],
       correct_answer: "1",
-      point: 5
+      point: 1
     },
     {
       question_text: "What does 'active client research' involve before an interview?",
@@ -61,7 +61,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Sending a message to the HR manager asking what they do"
       ],
       correct_answer: "2",
-      point: 5
+      point: 1
     }
   ],
   2: [
@@ -74,7 +74,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Avoiding any stressful situations or tight deadlines"
       ],
       correct_answer: "1",
-      point: 5
+      point: 1
     },
     {
       question_text: "What is the best practice when you realize a major project milestone will be missed?",
@@ -85,7 +85,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Assigning blame to external factors or junior engineers"
       ],
       correct_answer: "2",
-      point: 5
+      point: 1
     },
     {
       question_text: "How should constructive criticism from a team lead be handled?",
@@ -96,7 +96,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Nodding in agreement during the review but changing absolutely nothing"
       ],
       correct_answer: "2",
-      point: 5
+      point: 1
     },
     {
       question_text: "What is the hallmark of 'Ownership' in the workplace?",
@@ -107,7 +107,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Dictating instructions to colleagues without doing hands-on work"
       ],
       correct_answer: "1",
-      point: 5
+      point: 1
     },
     {
       question_text: "Which of the following is considered positive workplace etiquette?",
@@ -118,7 +118,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Replying to team chats only during scheduled weekly reviews"
       ],
       correct_answer: "2",
-      point: 5
+      point: 1
     }
   ],
   3: [
@@ -131,7 +131,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Delete them from your action log entirely"
       ],
       correct_answer: "1",
-      point: 5
+      point: 1
     },
     {
       question_text: "Which of the following is the core benefit of the Pomodoro Technique?",
@@ -142,7 +142,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Standardizing project deliverables across diverse engineering teams"
       ],
       correct_answer: "1",
-      point: 5
+      point: 1
     },
     {
       question_text: "What role does 'Deep Work' play in modern information professions?",
@@ -153,7 +153,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Collaborating with team members on shared boards"
       ],
       correct_answer: "2",
-      point: 5
+      point: 1
     },
     {
       question_text: "How can tool automation most effectively boost individual productivity?",
@@ -164,7 +164,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Standardizing every single word in all client emails"
       ],
       correct_answer: "1",
-      point: 5
+      point: 1
     },
     {
       question_text: "What is the root cause of professional burnout according to productivity studies?",
@@ -175,7 +175,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Attending more than two engineering cross-functional syncs per day"
       ],
       correct_answer: "1",
-      point: 5
+      point: 1
     }
   ],
   4: [
@@ -188,7 +188,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Changing passwords exactly once per year"
       ],
       correct_answer: "2",
-      point: 5
+      point: 1
     },
     {
       question_text: "In modern documentation systems, what is the best practice for version control?",
@@ -199,7 +199,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Re-creating the document folder structure for every minor sprint cycle"
       ],
       correct_answer: "1",
-      point: 5
+      point: 1
     },
     {
       question_text: "What is the primary role of 'Generative AI' in an analyst's daily workflow?",
@@ -210,7 +210,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Substituting for customer research interviews"
       ],
       correct_answer: "2",
-      point: 5
+      point: 1
     },
     {
       question_text: "When analyzing a large dataset, which practice ensures data integrity?",
@@ -221,7 +221,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Selecting only the records that confirm existing hypotheses"
       ],
       correct_answer: "2",
-      point: 5
+      point: 1
     },
     {
       question_text: "What is the main utility of using cloud-based collaborative whiteboards?",
@@ -232,7 +232,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Conducting complex calculations and financial projections"
       ],
       correct_answer: "1",
-      point: 5
+      point: 1
     }
   ],
   5: [
@@ -245,7 +245,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Asking for flexible work hours and remote options immediately"
       ],
       correct_answer: "2",
-      point: 5
+      point: 1
     },
     {
       question_text: "What is the most constructive way to seek clarification on a task assignment?",
@@ -256,7 +256,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Initiating the task with multiple assumptions without verifying with the manager"
       ],
       correct_answer: "2",
-      point: 5
+      point: 1
     },
     {
       question_text: "Which behavior differentiates a high-performing intern from a standard one?",
@@ -267,7 +267,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Telling management how much harder you work than other interns"
       ],
       correct_answer: "1",
-      point: 5
+      point: 1
     },
     {
       question_text: "What does 'managing up' mean for an intern?",
@@ -278,7 +278,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Bypassing your manager to talk to directors because you have high energy"
       ],
       correct_answer: "2",
-      point: 5
+      point: 1
     },
     {
       question_text: "What is the ultimate goal of an internship from a career development perspective?",
@@ -289,7 +289,7 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "To observe daily operations without participating in actual deliverables"
       ],
       correct_answer: "0",
-      point: 5
+      point: 1
     }
   ]
 };
@@ -316,13 +316,13 @@ export default function TrainingHubPage() {
     return completedModules.some(log => log.module_number === moduleNumber);
   };
 
-  const isModulePassed = (moduleNumber: number) => {
-    return quizSubmissions.some(sub => sub.module_number === moduleNumber && sub.passed);
+  const hasSubmittedQuiz = (moduleNumber: number) => {
+    return quizSubmissions.some(sub => sub.module_number === moduleNumber);
   };
 
   const isModuleLocked = (moduleNumber: number) => {
     if (moduleNumber === 1) return false;
-    return !isModulePassed(moduleNumber - 1);
+    return !hasSubmittedQuiz(moduleNumber - 1);
   };
 
   const hasStudiedModule = (moduleNumber: number) => {
@@ -423,7 +423,7 @@ export default function TrainingHubPage() {
 
     setLocalScore(scoreCount);
     setLocalMaxPoints(maxPoints);
-    setLocalPassed(passed);
+    setLocalPassed(true);
     
     try {
       await submitQuiz(activeModule, scoreCount, passed);
@@ -502,8 +502,8 @@ export default function TrainingHubPage() {
         const mNum = parseInt(startQuizParam, 10);
         if (!isNaN(mNum)) {
           const isCompleted = completedModules.some(l => l.module_number === mNum);
-          const isPassed = quizSubmissions.some(s => s.module_number === mNum && s.passed);
-          if (isCompleted && !isPassed) {
+          const hasSubmitted = quizSubmissions.some(s => s.module_number === mNum);
+          if (isCompleted && !hasSubmitted) {
             // Delay state change to avoid synchronous state triggers inside react rendering loop
             setTimeout(() => {
               handleStartQuiz(mNum);
@@ -527,14 +527,14 @@ export default function TrainingHubPage() {
 
   // Circular Stats Calculations as specified by User
   const completedModulesCount = completedModules.length;
-  const passedQuizzesCount = quizSubmissions.filter(sub => sub.passed).length;
+  const passedQuizzesCount = quizSubmissions.length;
   const totalScoreEarned = quizSubmissions.reduce((sum, sub) => sum + (sub.score || 0), 0);
   const completionPercentage = totalModulesCount > 0 ? Math.round((completedModulesCount / totalModulesCount) * 100) : 0;
 
   // Find current active training module progress description
   let currentActiveNo = 1;
   for (let i = 1; i <= totalModulesCount; i++) {
-    if (!isModulePassed(i)) {
+    if (!hasSubmittedQuiz(i)) {
       currentActiveNo = i;
       break;
     }
@@ -607,7 +607,8 @@ export default function TrainingHubPage() {
         <div className="space-y-6">
         {modules.map(m => {
             const completed = isModuleCompleted(m.module_number);
-            const passed = isModulePassed(m.module_number);
+            const subRecord = quizSubmissions.find(sub => sub.module_number === m.module_number);
+            const hasSubmitted = !!subRecord;
             const locked = isModuleLocked(m.module_number);
             const isCurrentActive = m.module_number === currentActiveNo;
 
@@ -615,7 +616,7 @@ export default function TrainingHubPage() {
               <div 
                 key={m.id}
                 className={`p-6 rounded-2xl border transition-all duration-200 ${
-                  passed 
+                  hasSubmitted 
                     ? 'bg-[#1a2321]/40 border-green-500/10 opacity-90' 
                     : locked 
                     ? 'opacity-40 bg-[#1a2321]/30 border-transparent select-none cursor-not-allowed'
@@ -625,25 +626,25 @@ export default function TrainingHubPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
                   <div className="flex items-start gap-4">
                     <div className={`p-3 rounded-xl transition-all ${
-                      passed 
+                      hasSubmitted 
                         ? 'bg-green-500/10 text-green-400 border border-green-500/10' 
                         : locked 
                         ? 'bg-white/5 text-gray-500' 
                         : 'bg-[#DFFF00]/10 text-[#DFFF00] border border-[#DFFF00]/10'
                     }`}>
-                      {passed ? <CheckCircle2 size={22} /> : locked ? <Lock size={22} /> : <BookOpen size={22} />}
+                      {hasSubmitted ? <CheckCircle2 size={22} /> : locked ? <Lock size={22} /> : <BookOpen size={22} />}
                     </div>
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-[10px] font-mono tracking-wider font-bold uppercase text-gray-400">
                           Module {m.module_number}
                         </span>
-                        {passed && (
+                        {hasSubmitted && (
                           <span className="px-2 py-0.5 rounded-full text-[9px] bg-green-500/10 text-green-400 font-bold border border-green-400/20 flex items-center gap-1">
-                            <Check size={8} strokeWidth={4} /> PASSED & CERTIFIED
+                            <Check size={8} strokeWidth={4} /> QUIZ COMPLETED ({subRecord?.score || 0}/5)
                           </span>
                         )}
-                        {completed && !passed && (
+                        {completed && !hasSubmitted && (
                           <span className="px-2 py-0.5 rounded-full text-[9px] bg-amber-500/10 text-amber-400 font-bold border border-amber-400/20">
                             QUIZ GATE ACTIVE
                           </span>
@@ -660,7 +661,7 @@ export default function TrainingHubPage() {
 
                   {/* Actions Area */}
                   <div className="flex flex-wrap items-center gap-3 self-end sm:self-center">
-                    {passed ? (
+                    {hasSubmitted ? (
                       <Link 
                         href={`/dashboard/training-hub/${m.module_number}`}
                         className="bg-green-500/[0.05] text-green-400 border border-green-500/20 hover:border-green-400 hover:bg-green-500/10 px-4 py-2.5 rounded-xl font-bold transition-all text-sm flex items-center gap-2"
@@ -789,34 +790,26 @@ export default function TrainingHubPage() {
                     animate={{ scale: 1, opacity: 1 }}
                     className="bg-[#1c2624] border border-white/10 p-8 md:p-11 rounded-3xl text-center space-y-6 max-w-md mx-auto shadow-2xl"
                   >
-                    <div className={`w-16 h-16 rounded-full mx-auto flex items-center justify-center ${
-                      localPassed ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-500'
-                    }`}>
-                      {localPassed ? <CheckCircle2 size={36} /> : <XCircle size={36} />}
+                    <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center bg-green-500/10 text-green-400">
+                      <CheckCircle2 size={36} />
                     </div>
                     
                     <div className="space-y-2">
-                      <h4 className="text-2xl font-bold text-white">
-                        {localPassed ? 'Quiz Passed!' : 'Failed. Try Again!'}
+                       <h4 className="text-2xl font-bold text-white">
+                        Quiz Completed!
                       </h4>
                       <p className="text-gray-400 text-sm">
-                        {localPassed 
-                          ? 'Congratulations! You met the passing threshold for this dynamic study gate!' 
-                          : 'You did not meet the passing threshold (60%) for this module quiz gate.'}
+                        You have completed the certification quiz for this module.
                       </p>
                     </div>
 
                     <div className="bg-[#151c1b] p-6 rounded-2xl border border-white/5 space-y-2.5">
                       <div className="text-xs text-gray-400 uppercase tracking-widest font-mono">Module Score Summary</div>
-                      <div className={`text-3xl font-black font-mono ${localPassed ? 'text-[#DFFF00]' : 'text-red-400'}`}>
+                      <div className="text-3xl font-black font-mono text-[#DFFF00]">
                         {localScore} / {localMaxPoints}
                       </div>
                       <p className="text-xs text-gray-300 font-mono">Points Earned: +{localScore} pts</p>
-                      {localPassed ? (
-                        <p className="text-xs text-green-400 font-semibold">Next Module Unlocked Successfully</p>
-                      ) : (
-                        <p className="text-xs text-red-400 font-semibold">Please review study material and retry</p>
-                      )}
+                      <p className="text-xs text-green-400 font-semibold">Next Module Unlocked Successfully</p>
                     </div>
 
                     <button

@@ -16,12 +16,13 @@ export default function ModulePage() {
   const moduleNumber = parseInt(params.id as string);
   const moduleData = modules.find(m => m.module_number === moduleNumber);
   
-  // Sequential Unlock logic: Module 1 is always unlocked; other modules are unlocked if previous is completed & passed
-  const isUnlocked = moduleNumber === 1 || quizSubmissions.some(sub => sub.module_number === moduleNumber - 1 && sub.passed);
+  // Sequential Unlock logic: Module 1 is always unlocked; other modules are unlocked if previous is completed & submitted
+  const isUnlocked = moduleNumber === 1 || quizSubmissions.some(sub => sub.module_number === moduleNumber - 1);
   
   // Progress status of the current module
   const isCompleted = completedModules.some(log => log.module_number === moduleNumber);
-  const isPassed = quizSubmissions.some(sub => sub.module_number === moduleNumber && sub.passed);
+  const subRecord = quizSubmissions.find(sub => sub.module_number === moduleNumber);
+  const hasSubmitted = !!subRecord;
 
   const handleMarkComplete = async () => {
     if (isMarking) return;
@@ -81,7 +82,7 @@ export default function ModulePage() {
           <div className="space-y-2">
             <h3 className="text-2xl font-bold text-white">Module Locked</h3>
             <p className="text-gray-400 text-sm leading-relaxed">
-              To unlock Module {moduleNumber}, you must first complete and pass the certification quiz for Module {moduleNumber - 1}.
+              To unlock Module {moduleNumber}, you must first complete the certification quiz for Module {moduleNumber - 1}.
             </p>
           </div>
           <Link 
@@ -169,13 +170,13 @@ export default function ModulePage() {
 
         {/* Dynamic Interactive Completion Footer Button Flow */}
         <div className="mt-10 flex flex-col items-center justify-center w-full pt-4 text-center">
-          {isPassed ? (
+          {hasSubmitted ? (
             <div className="space-y-4">
               <div className="flex items-center justify-center gap-3 text-green-400 font-bold text-lg bg-green-500/10 px-6 py-3 rounded-2xl border border-green-500/20 shadow-inner">
-                <CheckCircle2 size={24} /> Module Certified & Passed!
+                <CheckCircle2 size={24} /> Module Certified & Completed! (Score: {subRecord?.score ?? 0}/5)
               </div>
               <p className="text-gray-400 text-sm max-w-md">
-                You have passed the quiz for this module. You can review the material as often as you like.
+                You have completed the certification quiz for this module. You can review the material as often as you like.
               </p>
               <Link 
                 href="/dashboard/training-hub" 

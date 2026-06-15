@@ -37,8 +37,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/login');
   };
 
-  const passedQuizzesCount = quizSubmissions.filter(sub => sub.passed === true).length;
-  const isLocked = !applicant || passedQuizzesCount < 5;
+  const completedQuizzesCount = Array.from(new Set(quizSubmissions.map(sub => sub.module_number))).length;
+  const isLocked = !applicant || completedQuizzesCount < 5;
 
   return (
     <div className="min-h-screen bg-[#1a2321] text-[#E0E6ED] flex">

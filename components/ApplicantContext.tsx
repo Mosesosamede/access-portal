@@ -176,7 +176,7 @@ export const ApplicantProvider = ({ children }: { children: ReactNode }) => {
     setQuizSubmissions(currentList);
 
     // Calculate progress_percent and advance stage
-    const quizCount = currentList.filter(s => s.passed).length;
+    const quizCount = Array.from(new Set(currentList.map(s => s.module_number))).length;
     const totalModulesCount = modules.length || 5;
     const calculatedProgress = Math.min(100, Math.round((quizCount / totalModulesCount) * 100));
 
