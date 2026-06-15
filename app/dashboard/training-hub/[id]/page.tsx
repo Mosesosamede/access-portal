@@ -201,7 +201,7 @@ export default function ModulePage() {
           ) : (
             <div className="space-y-4 w-full max-w-md animate-fade-in">
               <p className="text-gray-400 text-sm">
-                Ensure you read the document completely before marking.
+                Please review this module carefully before marking it as complete. Once completed, you will not be able to revisit this lesson
               </p>
               <button 
                 onClick={handleMarkComplete} 
