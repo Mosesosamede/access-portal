@@ -4,6 +4,7 @@ import { useApplicant } from '@/components/ApplicantContext';
 import { Loader2, ArrowLeft, GraduationCap, CheckCircle2, Play, Lock, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import ReactMarkdown from "react-markdown";
 import { motion } from 'motion/react';
 
 export default function ModulePage() {
@@ -96,50 +97,7 @@ export default function ModulePage() {
     );
   }
 
-  const renderContent = (text: string) => {
-    if (!text) return null;
-    return text.split('\n\n').map((paragraph, idx) => {
-      const cleanPara = paragraph.trim();
-      if (!cleanPara) return null;
-      
-      // Basic markdown styling: check for headers or bullet items
-      if (cleanPara.startsWith('### ')) {
-        return (
-          <h4 key={idx} className="text-lg md:text-xl font-bold text-white mt-8 mb-4">
-            {cleanPara.replace('### ', '')}
-          </h4>
-        );
-      }
-      if (cleanPara.startsWith('## ')) {
-        return (
-          <h3 key={idx} className="text-xl md:text-2xl font-bold text-white mt-10 mb-5 border-b border-white/5 pb-2">
-            {cleanPara.replace('## ', '')}
-          </h3>
-        );
-      }
-      if (cleanPara.startsWith('- ') || cleanPara.startsWith('* ')) {
-        return (
-          <ul key={idx} className="list-disc list-inside mb-6 text-gray-300 space-y-2.5 leading-relaxed text-base pl-4">
-            {cleanPara.split('\n').map((item, iIdx) => (
-              <li key={iIdx}>{item.replace(/^[-*]\s+/, '')}</li>
-            ))}
-          </ul>
-        );
-      }
-      
-      return (
-        <p key={idx} className="mb-6 text-gray-300 leading-relaxed text-base md:text-lg">
-          {cleanPara.split('\n').map((line, lIdx) => (
-            <span key={lIdx}>
-              {line}
-              {lIdx < cleanPara.split('\n').length - 1 && <br />}
-            </span>
-          ))}
-        </p>
-      );
-    });
-  };
-
+  
   return (
     <motion.div 
       initial={{ opacity: 0, y: 15 }}
@@ -164,8 +122,22 @@ export default function ModulePage() {
       
       <div className="bg-[rgb(50,60,55)] p-6 md:p-10 rounded-3xl border border-white/10 shadow-2xl flex flex-col">
         {/* Module Text Content */}
-        <article className="prose prose-invert max-w-none border-b border-white/10 pb-10">
-          {renderContent(moduleData.content)}
+        <article className="prose
+prose-invert
+prose-lg
+max-w-none
+prose-headings:text-white
+prose-headings:font-bold
+prose-p:text-gray-300
+prose-li:text-gray-300
+prose-strong:text-[#DFFF00]
+prose-a:text-[#DFFF00]
+border-b
+border-white/10
+pb-10">
+             <ReactMarkdown>
+                 {moduleData.content}
+             </ReactMarkdown>
         </article>
 
         {/* Dynamic Interactive Completion Footer Button Flow */}
