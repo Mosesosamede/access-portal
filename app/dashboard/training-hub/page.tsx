@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useApplicant } from '@/components/ApplicantContext';
-import { Loader2, Lock, Unlock, ArrowLeft, BookOpen, GraduationCap, CheckCircle, Clock, Award, AlertTriangle, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { Loader2, Lock, Unlock, ArrowLeft, BookOpen, GraduationCap, CheckCircle2, Clock, Award, ChevronRight, ChevronLeft, Check, Play, FileText, XCircle } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
@@ -16,7 +16,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Only talking to the most senior executives in your field",
         "Waiting for people to find you on search engines"
       ],
-      correct_index: 1
+      correct_answer: "1",
+      point: 5
     },
     {
       question_text: "When crafting a professional resume, which of the following is most crucial?",
@@ -26,7 +27,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Tailoring your bullet points to match the target job description with metrics",
         "Making the document as long as possible to show expertise"
       ],
-      correct_index: 2
+      correct_answer: "2",
+      point: 5
     },
     {
       question_text: "What is the purpose of a professional cover letter?",
@@ -36,7 +38,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "To tell a compelling story matching your skills with the company's needs",
         "To explain why your previous employers were completely wrong"
       ],
-      correct_index: 2
+      correct_answer: "2",
+      point: 5
     },
     {
       question_text: "Which of the following defines 'Career Growth'?",
@@ -46,7 +49,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Demanding salary increases every six months without fail",
         "Changing jobs as frequently as possible to increase title rank"
       ],
-      correct_index: 1
+      correct_answer: "1",
+      point: 5
     },
     {
       question_text: "What does 'active client research' involve before an interview?",
@@ -56,7 +60,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Understanding their industry, core products, target audience, and current challenges",
         "Sending a message to the HR manager asking what they do"
       ],
-      correct_index: 2
+      correct_answer: "2",
+      point: 5
     }
   ],
   2: [
@@ -68,7 +73,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Always agreeing with the loudest person in the conference room",
         "Avoiding any stressful situations or tight deadlines"
       ],
-      correct_index: 1
+      correct_answer: "1",
+      point: 5
     },
     {
       question_text: "What is the best practice when you realize a major project milestone will be missed?",
@@ -78,7 +84,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Proactively notifying stakeholders with a clear explanation and updated plan",
         "Assigning blame to external factors or junior engineers"
       ],
-      correct_index: 2
+      correct_answer: "2",
+      point: 5
     },
     {
       question_text: "How should constructive criticism from a team lead be handled?",
@@ -88,7 +95,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Active listening, requesting specific examples, and designing a development plan",
         "Nodding in agreement during the review but changing absolutely nothing"
       ],
-      correct_index: 2
+      correct_answer: "2",
+      point: 5
     },
     {
       question_text: "What is the hallmark of 'Ownership' in the workplace?",
@@ -98,7 +106,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Seeking public credit for every successful team milestone",
         "Dictating instructions to colleagues without doing hands-on work"
       ],
-      correct_index: 1
+      correct_answer: "1",
+      point: 5
     },
     {
       question_text: "Which of the following is considered positive workplace etiquette?",
@@ -108,7 +117,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Punctuality, structured collaboration, active listening, and respecting diverse views",
         "Replying to team chats only during scheduled weekly reviews"
       ],
-      correct_index: 2
+      correct_answer: "2",
+      point: 5
     }
   ],
   3: [
@@ -120,7 +130,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Schedule them for next quarter's personal sprint",
         "Delete them from your action log entirely"
       ],
-      correct_index: 1
+      correct_answer: "1",
+      point: 5
     },
     {
       question_text: "Which of the following is the core benefit of the Pomodoro Technique?",
@@ -130,7 +141,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Maximizing the absolute number of hours spent at your desk",
         "Standardizing project deliverables across diverse engineering teams"
       ],
-      correct_index: 1
+      correct_answer: "1",
+      point: 5
     },
     {
       question_text: "What role does 'Deep Work' play in modern information professions?",
@@ -140,7 +152,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "High-concentration cognitive activities that create massive value and skill growth",
         "Collaborating with team members on shared boards"
       ],
-      correct_index: 2
+      correct_answer: "2",
+      point: 5
     },
     {
       question_text: "How can tool automation most effectively boost individual productivity?",
@@ -150,7 +163,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Replacing the need for active peer feedback loops",
         "Standardizing every single word in all client emails"
       ],
-      correct_index: 1
+      correct_answer: "1",
+      point: 5
     },
     {
       question_text: "What is the root cause of professional burnout according to productivity studies?",
@@ -160,7 +174,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Working on projects that challenge your core technical boundaries",
         "Attending more than two engineering cross-functional syncs per day"
       ],
-      correct_index: 1
+      correct_answer: "1",
+      point: 5
     }
   ],
   4: [
@@ -172,7 +187,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "High-entropy unique passwords, multi-factor authentication (MFA), and zero share",
         "Changing passwords exactly once per year"
       ],
-      correct_index: 2
+      correct_answer: "2",
+      point: 5
     },
     {
       question_text: "In modern documentation systems, what is the best practice for version control?",
@@ -182,7 +198,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Sending revised documents to team leads via immediate email attachments",
         "Re-creating the document folder structure for every minor sprint cycle"
       ],
-      correct_index: 1
+      correct_answer: "1",
+      point: 5
     },
     {
       question_text: "What is the primary role of 'Generative AI' in an analyst's daily workflow?",
@@ -192,7 +209,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Partnering as an accelerant for drafting, brainstorming, and initial coding",
         "Substituting for customer research interviews"
       ],
-      correct_index: 2
+      correct_answer: "2",
+      point: 5
     },
     {
       question_text: "When analyzing a large dataset, which practice ensures data integrity?",
@@ -202,7 +220,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Structuring precise data validation rules, treating nulls clearly, and documenting methods",
         "Selecting only the records that confirm existing hypotheses"
       ],
-      correct_index: 2
+      correct_answer: "2",
+      point: 5
     },
     {
       question_text: "What is the main utility of using cloud-based collaborative whiteboards?",
@@ -212,7 +231,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Presenting high-fidelity mockups to passive client audiences",
         "Conducting complex calculations and financial projections"
       ],
-      correct_index: 1
+      correct_answer: "1",
+      point: 5
     }
   ],
   5: [
@@ -224,7 +244,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Active curiosity, punctuality, taking copious notes, and clarifying expectations",
         "Asking for flexible work hours and remote options immediately"
       ],
-      correct_index: 2
+      correct_answer: "2",
+      point: 5
     },
     {
       question_text: "What is the most constructive way to seek clarification on a task assignment?",
@@ -234,7 +255,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Asking colleagues to do the work with you so you can shadow them",
         "Initiating the task with multiple assumptions without verifying with the manager"
       ],
-      correct_index: 1
+      correct_answer: "2",
+      point: 5
     },
     {
       question_text: "Which behavior differentiates a high-performing intern from a standard one?",
@@ -244,7 +266,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Working late hours to ensure visibility even when work is already done",
         "Telling management how much harder you work than other interns"
       ],
-      correct_index: 1
+      correct_answer: "1",
+      point: 5
     },
     {
       question_text: "What does 'managing up' mean for an intern?",
@@ -254,7 +277,8 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "Ensuring your manager stays informed of your progress, blockers, and bandwidth",
         "Bypassing your manager to talk to directors because you have high energy"
       ],
-      correct_index: 2
+      correct_answer: "2",
+      point: 5
     },
     {
       question_text: "What is the ultimate goal of an internship from a career development perspective?",
@@ -264,13 +288,14 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
         "To gain maximum visual branding on social media channels",
         "To observe daily operations without participating in actual deliverables"
       ],
-      correct_index: 0
+      correct_answer: "0",
+      point: 5
     }
   ]
 };
 
 export default function TrainingHubPage() {
-  const { modules, quizSubmissions, submitQuiz, isLoading } = useApplicant();
+  const { modules, quizSubmissions, completedModules, submitQuiz, isLoading } = useApplicant();
 
   // Active Quiz State
   const [activeQuizModule, setActiveQuizModule] = useState<number | null>(null);
@@ -280,7 +305,109 @@ export default function TrainingHubPage() {
   const [timeLeft, setTimeLeft] = useState(180);
   const [isQuizFinishedLocally, setIsQuizFinishedLocally] = useState(false);
   const [localScore, setLocalScore] = useState(0);
+  const [localMaxPoints, setLocalMaxPoints] = useState(0);
+  const [localPassed, setLocalPassed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const totalModulesCount = modules.length || 5;
+
+  // Sync state functions
+  const isModuleCompleted = (moduleNumber: number) => {
+    return completedModules.some(log => log.module_number === moduleNumber);
+  };
+
+  const isModulePassed = (moduleNumber: number) => {
+    return quizSubmissions.some(sub => sub.module_number === moduleNumber && sub.passed);
+  };
+
+  const isModuleLocked = (moduleNumber: number) => {
+    if (moduleNumber === 1) return false;
+    return !isModulePassed(moduleNumber - 1);
+  };
+
+  const hasStudiedModule = (moduleNumber: number) => {
+    return completedModules.some(log => log.module_number === moduleNumber);
+  };
+
+  const handleStartQuiz = async (moduleNumber: number) => {
+    setActiveQuizModule(moduleNumber);
+    setCurrentQuestionIndex(0);
+    setSelectedAnswers({});
+    setIsQuizFinishedLocally(false);
+    setTimeLeft(180);
+
+    const supabase = getSupabase();
+    try {
+      const { data, error } = await supabase
+        .from('quiz_questions')
+        .select('*')
+        .eq('module_number', moduleNumber);
+      
+      if (data && data.length > 0) {
+        const formatted = data.map(q => {
+          let opts: string[] = [];
+          if (Array.isArray(q.options)) {
+            opts = q.options;
+          } else if (typeof q.options === 'string') {
+            try {
+              opts = JSON.parse(q.options);
+            } catch {
+              opts = [];
+            }
+          }
+          return {
+            ...q,
+            options: opts.length > 0 ? opts : ["Option A", "Option B", "Option C", "Option D"]
+          };
+        });
+        setQuizQuestions(formatted);
+      } else {
+        setQuizQuestions(FALLBACK_QUIZ_QUESTIONS[moduleNumber] || []);
+      }
+    } catch {
+      setQuizQuestions(FALLBACK_QUIZ_QUESTIONS[moduleNumber] || []);
+    }
+  };
+
+  const evaluateScore = (answers: Record<number, number>, questions: any[]) => {
+    let scoreCount = 0;
+    let maxPoints = 0;
+
+    questions.forEach((q, idx) => {
+      const chosenIndex = answers[idx];
+      const ptVal = typeof q.point === 'number' ? q.point : parseInt(q.point, 10) || 1;
+      maxPoints += ptVal;
+
+      if (chosenIndex !== undefined && q.options && q.options[chosenIndex] !== undefined) {
+        const chosenText = q.options[chosenIndex];
+        const correctVal = q.correct_answer;
+
+        let isCorrect = false;
+        // Direct matching
+        if (String(correctVal).trim() === String(chosenIndex).trim()) {
+          isCorrect = true;
+        }
+        // Text value matching
+        else if (chosenText && String(chosenText).trim().toLowerCase() === String(correctVal).trim().toLowerCase()) {
+          isCorrect = true;
+        }
+        // Char code letter mapping
+        else if (correctVal) {
+          const char = String(correctVal).trim().toUpperCase();
+          if (char === 'A' && chosenIndex === 0) isCorrect = true;
+          else if (char === 'B' && chosenIndex === 1) isCorrect = true;
+          else if (char === 'C' && chosenIndex === 2) isCorrect = true;
+          else if (char === 'D' && chosenIndex === 3) isCorrect = true;
+        }
+
+        if (isCorrect) {
+          scoreCount += ptVal;
+        }
+      }
+    });
+
+    return { scoreCount, maxPoints };
+  };
 
   const submitEvaluatedQuiz = async (overrideModule?: number, overrideAnswers?: any, overrideQuestions?: any) => {
     const activeModule = overrideModule ?? activeQuizModule;
@@ -290,25 +417,19 @@ export default function TrainingHubPage() {
     const answers = overrideAnswers ?? selectedAnswers;
     const questions = overrideQuestions ?? quizQuestions;
 
-    // Calculate score
-    let scoreCount = 0;
-    questions.forEach((q: any, idx: number) => {
-      const chosen = answers[idx];
-      if (chosen !== undefined && chosen === q.correct_index) {
-        scoreCount++;
-      }
-    });
+    const { scoreCount, maxPoints } = evaluateScore(answers, questions);
+    // Passing threshold is defined as 60% of total points possible
+    const passed = maxPoints > 0 ? (scoreCount >= Math.ceil(maxPoints * 0.6)) : (scoreCount >= 3);
 
     setLocalScore(scoreCount);
+    setLocalMaxPoints(maxPoints);
+    setLocalPassed(passed);
     
     try {
-      await submitQuiz(activeModule, scoreCount);
+      await submitQuiz(activeModule, scoreCount, passed);
       sessionStorage.removeItem(`quiz_start_time_m${activeModule}`);
-      if (typeof window !== 'undefined') {
-        window.localStorage.removeItem(`studied_module_${activeModule}`);
-      }
     } catch (e) {
-      console.error(e);
+      console.error('Error submitting quiz score:', e);
     } finally {
       setIsSubmitting(false);
       setIsQuizFinishedLocally(true);
@@ -323,22 +444,28 @@ export default function TrainingHubPage() {
     submitEvaluatedQuiz();
   };
 
-  // Before unload block when quiz is running
+  const closeQuizOverlay = () => {
+    setActiveQuizModule(null);
+    setQuizQuestions([]);
+    setIsQuizFinishedLocally(false);
+  };
+
+  // Block page exit on reload during active quiz
   useEffect(() => {
-    if (activeQuizModule !== null) {
+    if (activeQuizModule !== null && !isQuizFinishedLocally) {
       const handleBeforeUnload = (e: BeforeUnloadEvent) => {
         e.preventDefault();
-        e.returnValue = 'Are you sure you want to exit? Your progress on this quiz will be lost.';
+        e.returnValue = 'Assessment gate is active! Leaving this page will submit your quiz immediately.';
         return e.returnValue;
       };
       window.addEventListener('beforeunload', handleBeforeUnload);
       return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }
-  }, [activeQuizModule]);
+  }, [activeQuizModule, isQuizFinishedLocally]);
 
-  // Quiz Timer effect with Resume persistence
+  // Quiz Countdown Timer Effect
   useEffect(() => {
-    if (activeQuizModule === null) return;
+    if (activeQuizModule === null || isQuizFinishedLocally) return;
 
     const tick = () => {
       const now = Date.now();
@@ -364,7 +491,31 @@ export default function TrainingHubPage() {
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeQuizModule, quizQuestions, selectedAnswers]);
+  }, [activeQuizModule, quizQuestions, selectedAnswers, isQuizFinishedLocally]);
+
+  // Check URL query parameters to auto-start the quiz if returning from module detail study workspace
+  useEffect(() => {
+    if (!isLoading && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const startQuizParam = params.get('startQuiz');
+      if (startQuizParam) {
+        const mNum = parseInt(startQuizParam, 10);
+        if (!isNaN(mNum)) {
+          const isCompleted = completedModules.some(l => l.module_number === mNum);
+          const isPassed = quizSubmissions.some(s => s.module_number === mNum && s.passed);
+          if (isCompleted && !isPassed) {
+            // Delay state change to avoid synchronous state triggers inside react rendering loop
+            setTimeout(() => {
+              handleStartQuiz(mNum);
+            }, 0);
+            // Clean the URL search params elegantly
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+          }
+        }
+      }
+    }
+  }, [isLoading, completedModules, quizSubmissions]);
 
   if (isLoading) {
     return (
@@ -374,60 +525,25 @@ export default function TrainingHubPage() {
     );
   }
 
-  // Circular Stats Calculations
-  const totalQuizPointsPossible = 25;
-  const quizPointsEarned = quizSubmissions.reduce((sum, sub) => sum + (sub.score || 0), 0);
-  const currentCompletionPercent = Math.round((quizSubmissions.length / 5) * 100);
+  // Circular Stats Calculations as specified by User
+  const completedModulesCount = completedModules.length;
+  const passedQuizzesCount = quizSubmissions.filter(sub => sub.passed).length;
+  const totalScoreEarned = quizSubmissions.reduce((sum, sub) => sum + (sub.score || 0), 0);
+  const completionPercentage = totalModulesCount > 0 ? Math.round((completedModulesCount / totalModulesCount) * 100) : 0;
 
-  const isModuleCompleted = (moduleNumber: number) => {
-    return quizSubmissions.some(sub => sub.module_number === moduleNumber);
-  };
-
-  const isModuleLocked = (moduleNumber: number) => {
-    if (moduleNumber === 1) return false;
-    // Locked if previous module hasn't been submitted
-    return !quizSubmissions.some(sub => sub.module_number === moduleNumber - 1);
-  };
-
-  const hasStudiedModule = (moduleNumber: number) => {
-    if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem(`studied_module_${moduleNumber}`) === 'true';
-  };
-
-  const handleStartQuiz = async (moduleNumber: number) => {
-    setActiveQuizModule(moduleNumber);
-    setCurrentQuestionIndex(0);
-    setSelectedAnswers({});
-    setIsQuizFinishedLocally(false);
-    setTimeLeft(180);
-
-    const supabase = getSupabase();
-    try {
-      const { data, error } = await supabase
-        .from('quiz_questions')
-        .select('*')
-        .eq('module_number', moduleNumber);
-      
-      if (data && data.length >= 5) {
-        setQuizQuestions(data.slice(0, 5));
-      } else {
-        setQuizQuestions(FALLBACK_QUIZ_QUESTIONS[moduleNumber] || []);
-      }
-    } catch {
-      setQuizQuestions(FALLBACK_QUIZ_QUESTIONS[moduleNumber] || []);
+  // Find current active training module progress description
+  let currentActiveNo = 1;
+  for (let i = 1; i <= totalModulesCount; i++) {
+    if (!isModulePassed(i)) {
+      currentActiveNo = i;
+      break;
     }
-  };
+  }
+  const currentProgressDesc = `Module ${currentActiveNo} of ${totalModulesCount}`;
 
-  const closeQuizOverlay = () => {
-    setActiveQuizModule(null);
-    setQuizQuestions([]);
-    setIsQuizFinishedLocally(false);
-  };
-
-  // Circular Stats calculations
-  const radius = 32;
+  const radius = 34;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (currentCompletionPercent / 100) * circumference;
+  const strokeDashoffset = circumference - (completionPercentage / 100) * circumference;
 
   return (
     <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-12">
@@ -440,24 +556,30 @@ export default function TrainingHubPage() {
           </Link>
           <div>
               <h2 className="text-3xl font-bold tracking-tight text-white">Training Hub</h2>
-              <p className='text-gray-400 mt-1 max-w-md'>Complete the study materials and challenge the module gates to advance.</p>
+              <p className="text-gray-400 mt-1 max-w-sm">Study modules sequentially and complete quiz gates to qualify for interviews.</p>
           </div>
         </div>
 
-        {/* Dashboard Widget Header Stats (Top Right) */}
-        <div className="bg-[#26312f] p-4 rounded-3xl border border-white/10 shadow-lg flex items-center gap-5 justify-between md:justify-end min-w-[280px]">
+        {/* Circular Progress Tracker Dashboard in Header */}
+        <div className="bg-[#26312f] p-5 rounded-3xl border border-white/10 shadow-lg flex items-center gap-5 justify-between min-w-[310px] self-start md:self-auto">
           <div className="space-y-1">
-            <div className="text-[10px] uppercase font-mono tracking-wider text-gray-400 font-semibold">Training Stats</div>
-            <div className="text-sm font-bold text-white">Points: <span className="text-[#DFFF00] font-mono">{quizPointsEarned}</span> / 25</div>
-            <div className="text-xs text-gray-300">Total Score: <span className="font-mono">{quizPointsEarned}</span> pts</div>
-            <div className="text-xs text-[#DFFF00] font-semibold">Completion: <span className="font-mono">{currentCompletionPercent}</span>%</div>
+            <div className="text-[10px] uppercase font-mono tracking-wider text-gray-400 font-bold">Progress Dashboard</div>
+            <div className="text-sm font-bold text-white">
+              Completed: <span className="text-green-400 font-mono">{completedModulesCount}</span> / {totalModulesCount}
+            </div>
+            <div className="text-sm font-bold text-white">
+              Score Earned: <span className="text-[#DFFF00] font-mono">{totalScoreEarned}</span> pts
+            </div>
+            <div className="text-xs text-gray-400 font-mono">
+              Current: <span className="text-[#DFFF00] font-semibold">{currentProgressDesc}</span>
+            </div>
           </div>
-          <div className="relative w-16 h-16">
+          <div className="relative w-18 h-18 flex-shrink-0">
             <svg className="w-full h-full transform -rotate-90">
-              <circle cx="32" cy="32" r={radius} className="text-white/5" strokeWidth="6" stroke="currentColor" fill="transparent" />
+              <circle cx="36" cy="36" r={radius} className="text-white/5" strokeWidth="6" stroke="currentColor" fill="transparent" />
               <circle 
-                cx="32" 
-                cy="32" 
+                cx="36" 
+                cy="36" 
                 r={radius} 
                 className="text-[#DFFF00]" 
                 strokeWidth="6" 
@@ -469,71 +591,90 @@ export default function TrainingHubPage() {
                 style={{ transition: 'stroke-dashoffset 0.8s ease' }}
               />
             </svg>
-            <div className="absolute inset-0 flex items-center justify-center text-xs font-mono font-bold text-[#DFFF00]">
-              {currentCompletionPercent}%
+            <div className="absolute inset-0 flex items-center justify-center text-xs font-mono font-black text-[#DFFF00]">
+              {completionPercentage}%
             </div>
           </div>
         </div>
       </div>
       
-      {/* Modules List layout */}
-      <div className='bg-[#26312f] p-6 md:p-8 rounded-3xl border border-[#dbf0de]/10 shadow-xl'>
-        <h3 className='text-xl font-bold mb-8 flex items-center gap-3 text-white'><GraduationCap className='text-[#dbf0de]' /> Course Modules</h3>
+      {/* Course Modules Segment */}
+      <div className="bg-[#26312f] p-6 md:p-8 rounded-3xl border border-[#dbf0de]/10 shadow-xl">
+        <h3 className="text-xl font-bold mb-8 flex items-center gap-3 text-white">
+          <GraduationCap className="text-[#dbf0de]" /> Dynamic Curriculum Modules
+        </h3>
         
-        <div className='space-y-6'>
+        <div className="space-y-6">
         {modules.map(m => {
             const completed = isModuleCompleted(m.module_number);
+            const passed = isModulePassed(m.module_number);
             const locked = isModuleLocked(m.module_number);
-            const studied = hasStudiedModule(m.module_number);
-            const activeModuleNumber = quizSubmissions.length + 1;
-            const isCurrentActive = m.module_number === activeModuleNumber;
+            const isCurrentActive = m.module_number === currentActiveNo;
 
             return (
               <div 
                 key={m.id}
-                className={`p-6 rounded-2xl border transition-all ${
-                  completed 
+                className={`p-6 rounded-2xl border transition-all duration-200 ${
+                  passed 
                     ? 'bg-[#1a2321]/40 border-green-500/10 opacity-90' 
                     : locked 
-                    ? 'opacity-40 bg-[#1a2321]/30 border-transparent pointer-events-none'
-                    : 'bg-[#1a2321] border-[#dbf0de]/10 hover:border-[#dbf0de]/30'
+                    ? 'opacity-40 bg-[#1a2321]/30 border-transparent select-none cursor-not-allowed'
+                    : 'bg-[#1a2321] border-[#dbf0de]/10 hover:border-[#dbf0de]/35 hover:shadow-md'
                 }`}
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  
-                  {/* Left block Info */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
                   <div className="flex items-start gap-4">
-                    <div className={`p-3 rounded-xl ${completed ? 'bg-green-500/10 text-green-400' : locked ? 'bg-white/5 text-gray-500' : 'bg-[#DFFF00]/10 text-[#DFFF00]'}`}>
-                      {completed ? <CheckCircle size={22} /> : locked ? <Lock size={22} /> : <BookOpen size={22} />}
+                    <div className={`p-3 rounded-xl transition-all ${
+                      passed 
+                        ? 'bg-green-500/10 text-green-400 border border-green-500/10' 
+                        : locked 
+                        ? 'bg-white/5 text-gray-500' 
+                        : 'bg-[#DFFF00]/10 text-[#DFFF00] border border-[#DFFF00]/10'
+                    }`}>
+                      {passed ? <CheckCircle2 size={22} /> : locked ? <Lock size={22} /> : <BookOpen size={22} />}
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-mono tracking-wider font-semibold uppercase text-gray-400">Module {m.module_number}</span>
-                        {completed && (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] bg-green-500/10 text-green-400 font-bold border border-green-400/20">COMPLETED</span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] font-mono tracking-wider font-bold uppercase text-gray-400">
+                          Module {m.module_number}
+                        </span>
+                        {passed && (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] bg-green-500/10 text-green-400 font-bold border border-green-400/20 flex items-center gap-1">
+                            <Check size={8} strokeWidth={4} /> PASSED & CERTIFIED
+                          </span>
+                        )}
+                        {completed && !passed && (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] bg-amber-500/10 text-amber-400 font-bold border border-amber-400/20">
+                            QUIZ GATE ACTIVE
+                          </span>
                         )}
                         {isCurrentActive && !completed && (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] bg-[#DFFF00]/10 text-[#DFFF00] font-bold border border-[#DFFF00]/30 animate-pulse">ACTIVE STEP</span>
+                          <span className="px-2 py-0.5 rounded-full text-[9px] bg-[#DFFF00]/10 text-[#DFFF00] font-bold border border-[#DFFF00]/30 animate-pulse">
+                            IN PROGRESS
+                          </span>
                         )}
                       </div>
-                      <h4 className="text-lg font-bold text-white mt-1">{m.title}</h4>
+                      <h4 className="text-lg font-bold text-white mt-1.5 leading-tight">{m.title}</h4>
                     </div>
                   </div>
 
-                  {/* Right block Actions (No review rule applies) */}
-                  <div className="flex flex-wrap items-center gap-3">
-                    {completed ? (
-                      <div className="flex items-center gap-2 text-green-400 text-sm font-bold bg-green-500/[0.08] px-4 py-2.5 rounded-xl border border-green-500/20">
-                        <Check size={16} /> Module Completed
-                      </div>
+                  {/* Actions Area */}
+                  <div className="flex flex-wrap items-center gap-3 self-end sm:self-center">
+                    {passed ? (
+                      <Link 
+                        href={`/dashboard/training-hub/${m.module_number}`}
+                        className="bg-green-500/[0.05] text-green-400 border border-green-500/20 hover:border-green-400 hover:bg-green-500/10 px-4 py-2.5 rounded-xl font-bold transition-all text-sm flex items-center gap-2"
+                      >
+                        <FileText size={15} /> Review Module
+                      </Link>
                     ) : locked ? (
-                      <div className="flex items-center gap-2 text-gray-500 text-xs font-mono">
-                        <Lock size={14} /> Locked Gate
+                      <div className="flex items-center gap-1.5 text-gray-500 text-xs font-mono bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 select-none">
+                        <Lock size={12} /> Sequential Locked Gate
                       </div>
-                    ) : studied && isCurrentActive ? (
+                    ) : completed ? (
                       <button 
                         onClick={() => handleStartQuiz(m.module_number)}
-                        className="bg-[#DFFF00] text-[#1a2321] px-5 py-2.5 rounded-xl font-bold hover:brightness-110 active:scale-95 transition-all text-sm font-sans flex items-center gap-2 shadow-[0_0_15px_rgba(223,255,0,0.2)] animate-bounce"
+                        className="bg-[#DFFF00] text-[#1a2321] px-5 py-2.5 rounded-xl font-extrabold hover:brightness-110 active:scale-95 transition-all text-sm flex items-center gap-2 shadow-[0_0_15px_rgba(223,255,0,0.25)] animate-bounce"
                       >
                         Take Quiz to Proceed <ChevronRight size={16} />
                       </button>
@@ -546,15 +687,14 @@ export default function TrainingHubPage() {
                       </Link>
                     )}
                   </div>
-
                 </div>
               </div>
-            )
+            );
         })}
         </div>
       </div>
 
-      {/* FULL-SCREEN QUIZ ENGINE OVERLAY */}
+      {/* FULL-SCREEN NON-DISMISSIBLE QUIZ ENGINE OVERLAY */}
       <AnimatePresence>
         {activeQuizModule !== null && (
           <motion.div 
@@ -563,26 +703,28 @@ export default function TrainingHubPage() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-[#0f1413] z-[100] flex flex-col justify-between"
           >
-            {/* Top Stats Bar */}
-            <header className="border-b border-white/10 bg-[#161f1e] p-4 flex justify-between items-center px-6 md:px-12">
+            {/* Top Bar showing Timer and Instructions (Exit Disabled) */}
+            <header className="border-b border-white/10 bg-[#161f1e] p-4 flex justify-between items-center px-6 md:px-12 shrink-0">
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400 font-semibold">Module {activeQuizModule} Certification Gate</span>
-                <h3 className="text-base md:text-lg font-bold text-white mt-0.5">Assessing Key Competencies</h3>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400 font-bold">
+                  Module {activeQuizModule} Certification Gate
+                </span>
+                <h3 className="text-sm md:text-base font-bold text-white mt-0.5">Assessment Challenge</h3>
               </div>
               
-              {/* 3-Minute Guard Timer */}
+              {/* 3-Minute countdown */}
               <div className={`flex items-center gap-2.5 px-4 py-2 rounded-2xl border font-mono text-sm md:text-base font-bold transition-all ${
-                timeLeft < 30 
+                timeLeft < 45 
                   ? 'bg-red-500/10 text-red-500 border-red-500/30 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.25)]' 
                   : 'bg-[#26312f]/80 text-[#DFFF00] border-[#DFFF00]/20'
               }`}>
-                <Clock size={16} className={`${timeLeft < 30 ? 'text-red-500 animate-spin' : 'text-[#DFFF00]'}`} />
+                <Clock size={16} className={`${timeLeft < 45 ? 'text-red-500 animate-spin' : 'text-[#DFFF00]'}`} />
                 <span>{Math.floor(timeLeft / 60)}:{((timeLeft % 60).toString().padStart(2, '0'))}</span>
               </div>
             </header>
 
-            {/* Main Interactive Quiz Card Container */}
-            <main className="flex-1 overflow-y-auto px-6 md:px-12 py-10 max-w-3xl mx-auto w-full flex flex-col justify-center">
+            {/* Interactive Questions block */}
+            <main className="flex-1 overflow-y-auto px-6 md:px-12 py-8 max-w-2xl mx-auto w-full flex flex-col justify-center">
               <AnimatePresence mode="wait">
                 {!isQuizFinishedLocally ? (
                   <motion.div 
@@ -590,31 +732,30 @@ export default function TrainingHubPage() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.25 }}
+                    transition={{ duration: 0.2 }}
                     className="space-y-8"
                   >
-                    {/* Progress indicator */}
+                    {/* Progress Slider */}
                     <div className="space-y-2">
                       <div className="flex justify-between items-center text-xs text-gray-400 font-mono">
-                        <span>QUESTION {currentQuestionIndex + 1} OF 5</span>
-                        <span>{Math.round(((currentQuestionIndex + 1) / 5) * 100)}% Complete</span>
+                        <span>QUESTION {currentQuestionIndex + 1} OF {quizQuestions.length}</span>
+                        <span>{Math.round(((currentQuestionIndex + 1) / Math.max(1, quizQuestions.length)) * 100)}% Complete</span>
                       </div>
                       <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
                         <div 
                           className="bg-[#DFFF00] h-full transition-all duration-300" 
-                          style={{ width: `${((currentQuestionIndex + 1) / 5) * 100}%` }}
+                          style={{ width: `${((currentQuestionIndex + 1) / Math.max(1, quizQuestions.length)) * 100}%` }}
                         />
                       </div>
                     </div>
 
-                    {/* Question text */}
+                    {/* Question Content */}
                     {quizQuestions[currentQuestionIndex] && (
                       <div className="space-y-6">
                         <h4 className="text-xl md:text-2xl font-bold font-sans text-white leading-snug">
                           {quizQuestions[currentQuestionIndex].question_text}
                         </h4>
 
-                        {/* Large Tappable Options list */}
                         <div className="space-y-3 pt-2">
                           {quizQuestions[currentQuestionIndex].options.map((opt: string, optIndex: number) => {
                             const isChosen = selectedAnswers[currentQuestionIndex] === optIndex;
@@ -622,7 +763,7 @@ export default function TrainingHubPage() {
                               <button
                                 key={optIndex}
                                 onClick={() => setSelectedAnswers(prev => ({ ...prev, [currentQuestionIndex]: optIndex }))}
-                                className={`w-full text-left p-5 rounded-2xl border transition-all flex items-center gap-4 active:scale-[0.99] duration-155 ${
+                                className={`w-full text-left p-5 rounded-2xl border transition-all flex items-center gap-4 active:scale-[0.99] duration-150 ${
                                   isChosen
                                     ? 'bg-[#DFFF00]/10 border-[#DFFF00] text-white shadow-[0_0_20px_rgba(223,255,0,0.12)]'
                                     : 'bg-[#1c2624] border-white/5 hover:border-white/20 hover:bg-[#26312f]/50 text-gray-300'
@@ -642,53 +783,68 @@ export default function TrainingHubPage() {
                     )}
                   </motion.div>
                 ) : (
-                  // Results Success Modal Inside Locked Screen
+                  // Results Success/Failure screen
                   <motion.div 
-                    initial={{ scale: 0.9, opacity: 0 }}
+                    initial={{ scale: 0.95, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="bg-[#1c2624] border border-white/10 p-8 md:p-12 rounded-3xl text-center space-y-6 max-w-md mx-auto shadow-2xl"
+                    className="bg-[#1c2624] border border-white/10 p-8 md:p-11 rounded-3xl text-center space-y-6 max-w-md mx-auto shadow-2xl"
                   >
-                    <div className="w-16 h-16 rounded-full bg-green-500/10 text-green-400 mx-auto flex items-center justify-center">
-                      <Award size={36} />
+                    <div className={`w-16 h-16 rounded-full mx-auto flex items-center justify-center ${
+                      localPassed ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-500'
+                    }`}>
+                      {localPassed ? <CheckCircle2 size={36} /> : <XCircle size={36} />}
                     </div>
+                    
                     <div className="space-y-2">
-                      <h4 className="text-2xl font-bold text-white">Quiz Evaluation Finished</h4>
-                      <p className="text-gray-400 text-sm">Your answers have been synchronized atomic with the course database.</p>
+                      <h4 className="text-2xl font-bold text-white">
+                        {localPassed ? 'Quiz Passed!' : 'Failed. Try Again!'}
+                      </h4>
+                      <p className="text-gray-400 text-sm">
+                        {localPassed 
+                          ? 'Congratulations! You met the passing threshold for this dynamic study gate!' 
+                          : 'You did not meet the passing threshold (60%) for this module quiz gate.'}
+                      </p>
                     </div>
 
                     <div className="bg-[#151c1b] p-6 rounded-2xl border border-white/5 space-y-2.5">
                       <div className="text-xs text-gray-400 uppercase tracking-widest font-mono">Module Score Summary</div>
-                      <div className="text-3xl font-black text-[#DFFF00] font-mono">{localScore} / 5</div>
+                      <div className={`text-3xl font-black font-mono ${localPassed ? 'text-[#DFFF00]' : 'text-red-400'}`}>
+                        {localScore} / {localMaxPoints}
+                      </div>
                       <p className="text-xs text-gray-300 font-mono">Points Earned: +{localScore} pts</p>
-                      <p className="text-xs text-green-400 font-semibold">+20% Completion Milestone Met</p>
+                      {localPassed ? (
+                        <p className="text-xs text-green-400 font-semibold">Next Module Unlocked Successfully</p>
+                      ) : (
+                        <p className="text-xs text-red-400 font-semibold">Please review study material and retry</p>
+                      )}
                     </div>
 
                     <button
                       onClick={closeQuizOverlay}
-                      className="w-full bg-[#DFFF00] text-[#1a2321] py-4 rounded-xl font-bold hover:brightness-110 active:scale-95 transition-all shadow-[0_0_15px_rgba(223,255,0,0.15)] text-base"
+                      className="w-full bg-[#DFFF00] text-[#1a2321] py-4 rounded-xl font-extrabold hover:brightness-110 active:scale-95 transition-all text-base"
                     >
-                      Acknowledge & Continue
+                      Acknowledge & Finish
                     </button>
                   </motion.div>
                 )}
               </AnimatePresence>
             </main>
 
-            {/* Navigation and Submission Bottom Footer Panel */}
+            {/* Bottom Form Navigation Controls (Exit Blocked) */}
             {!isQuizFinishedLocally && (
               <footer className="border-t border-white/10 bg-[#161f1e] p-4 flex justify-between items-center px-6 md:px-12 shrink-0">
                 <button
                   disabled={currentQuestionIndex === 0}
                   onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
-                  className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold border border-white/10 text-gray-300 hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm shrink-0"
+                  className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold border border-white/10 text-gray-300 hover:bg-white/5 disabled:opacity-35 disabled:cursor-not-allowed transition-all text-sm shrink-0"
                 >
                   <ChevronLeft size={16} /> Previous
                 </button>
 
-                {currentQuestionIndex < 4 ? (
+                {currentQuestionIndex < quizQuestions.length - 1 ? (
                   <button
                     onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
-                    className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold bg-[#26312f] text-white hover:bg-white/5 transition-all text-sm shrink-0"
+                    className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold bg-[#26312f] text-white hover:bg-white/5 transition-all text-sm shrink-0 font-sans"
                   >
                     Next <ChevronRight size={16} />
                   </button>
@@ -696,12 +852,12 @@ export default function TrainingHubPage() {
                   <button
                     onClick={handleManualSubmit}
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-[#DFFF00] text-[#1a2321] hover:brightness-110 disabled:opacity-50 transition-all text-sm shrink-0 shadow-[0_0_15px_rgba(223,255,0,0.2)]"
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl font-black bg-[#DFFF00] text-[#1a2321] hover:brightness-110 disabled:opacity-50 transition-all text-sm shrink-0 shadow-[0_0_15px_rgba(223,255,0,0.2)]"
                   >
                     {isSubmitting ? (
                       <>Evaluating... <Loader2 size={16} className="animate-spin" /></>
                     ) : (
-                      <>Submit Evaluation <Check size={16} /></>
+                      <>Submit Assessment <Check size={16} /></>
                     )}
                   </button>
                 )}

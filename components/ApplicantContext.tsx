@@ -36,21 +36,14 @@ export interface TrainingModule {
   id: string;
   module_number: number;
   title: string;
-  pdf_path: string;
+  content: string;
 }
-
-const MODULE_CONFIGS = [
-  { module_number: 1, title: 'Career Foundation', pdf_path: 'm1_foundation.pdf' },
-  { module_number: 2, title: 'Workplace Readiness', pdf_path: 'm2_readiness.pdf' },
-  { module_number: 3, title: 'Productivity Skills', pdf_path: 'm3_productivity.pdf' },
-  { module_number: 4, title: 'Digital Skills', pdf_path: 'm4_digital.pdf' },
-  { module_number: 5, title: 'Internship Success Toolkit', pdf_path: 'm5_toolkit.pdf' },
-];
 
 export interface TrainingLog {
   id: string;
   applicant_id: string;
   module_number: number;
+  completed_at?: string;
 }
 
 export interface QuizSubmission {
@@ -58,6 +51,8 @@ export interface QuizSubmission {
   applicant_id: string;
   module_number: number;
   score: number;
+  passed: boolean;
+  submitted_at?: string;
 }
 
 interface ApplicantContextType {
@@ -69,7 +64,7 @@ interface ApplicantContextType {
   user: User | null;
   refreshApplicantData: () => Promise<void>;
   completeModule: (moduleNumber: number) => Promise<void>;
-  submitQuiz: (moduleNumber: number, score: number) => Promise<void>;
+  submitQuiz: (moduleNumber: number, score: number, passed: boolean) => Promise<void>;
 }
 
 const ApplicantContext = createContext<ApplicantContextType | undefined>(undefined);
@@ -100,10 +95,7 @@ export const ApplicantProvider = ({ children }: { children: ReactNode }) => {
         
         // Fetch modules
         const { data: modulesData } = await supabase.from('training_modules').select('*').order('module_number');
-        const sortedModules = (modulesData || []).map(m => {
-            const config = MODULE_CONFIGS.find(c => c.module_number === m.module_number);
-            return config ? { ...m, ...config } : m;
-        }).sort((a,b) => a.module_number - b.module_number);
+        const sortedModules = (modulesData || []).sort((a,b) => a.module_number - b.module_number);
         setModules(sortedModules);
 
         // Fetch logs
@@ -139,7 +131,11 @@ export const ApplicantProvider = ({ children }: { children: ReactNode }) => {
     const supabase = getSupabase();
     
     // 1. Insert log
-    await supabase.from('training_logs').insert({ applicant_id: applicant.id, module_number: moduleNumber });
+    await supabase.from('training_logs').insert({ 
+      applicant_id: applicant.id, 
+      module_number: moduleNumber,
+      completed_at: new Date().toISOString()
+    });
     
     // 2. Recalculate progress
     const { data: logs } = await supabase.from('training_logs').select('module_number').eq('applicant_id', applicant.id);
@@ -153,30 +149,40 @@ export const ApplicantProvider = ({ children }: { children: ReactNode }) => {
     await fetchAllData(applicant.user_id);
   };
 
-  const submitQuiz = async (moduleNumber: number, score: number) => {
+  const submitQuiz = async (moduleNumber: number, score: number, passed: boolean) => {
     if (!applicant) return;
     const supabase = getSupabase();
 
-    const newSub = { applicant_id: applicant.id, module_number: moduleNumber, score: score };
+    const newSub = { 
+      applicant_id: applicant.id, 
+      module_number: moduleNumber, 
+      score: score,
+      passed: passed,
+      submitted_at: new Date().toISOString()
+    };
 
     // Try to save to DB
     const { error: insertError } = await supabase.from('quiz_submissions').insert(newSub);
 
     let currentList = [...quizSubmissions];
-    if (!currentList.some(s => s.module_number === moduleNumber)) {
-        currentList.push(newSub);
+    const existingIndex = currentList.findIndex(s => s.module_number === moduleNumber);
+    if (existingIndex > -1) {
+      currentList[existingIndex] = newSub;
+    } else {
+      currentList.push(newSub);
     }
 
     localStorage.setItem(`local_quiz_submissions_${applicant.id}`, JSON.stringify(currentList));
     setQuizSubmissions(currentList);
 
-    // Increment progress_percent by 20 and advance stage to next milestone when completion hits 100%
-    const quizCount = currentList.length;
-    const calculatedProgress = Math.min(100, quizCount * 20);
+    // Calculate progress_percent and advance stage
+    const quizCount = currentList.filter(s => s.passed).length;
+    const totalModulesCount = modules.length || 5;
+    const calculatedProgress = Math.min(100, Math.round((quizCount / totalModulesCount) * 100));
 
     let nextStage = applicant.current_stage;
-    if (quizCount === 5 && (parseInt(applicant.current_stage) || 1) <= 3) {
-        nextStage = '4'; // "Final Exam" (next milestone/stage in progression)
+    if (quizCount === totalModulesCount && (parseInt(applicant.current_stage) || 1) <= 3) {
+      nextStage = '4'; // "Final Exam" (next milestone/stage in progression)
     }
 
     await supabase.from('applicants').update({
