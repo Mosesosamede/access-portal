@@ -1,10 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useApplicant } from '@/components/ApplicantContext';
-import { Loader2, Lock, Unlock, ArrowLeft, BookOpen, GraduationCap, CheckCircle2, Clock, Award, ChevronRight, ChevronLeft, Check, Play, FileText, XCircle } from 'lucide-react';
+import { Loader2, Lock, Unlock, ArrowLeft, BookOpen, GraduationCap, CheckCircle2, Clock, Award, ChevronRight, ChevronLeft, Check, Play, FileText, XCircle, Sparkles, AlertCircle } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
+import confetti from 'canvas-confetti';
 
 const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
   1: [
@@ -294,24 +295,69 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
   ]
 };
 
+
+// ...
+
+// Professional Exam Modal Component
+const ProfessionalExamModal = ({ onClose }: { onClose: () => void }) => {
+  const [step, setStep] = useState<'celebration' | 'notice'>('celebration');
+  const [celebrationText, setCelebrationText] = useState('');
+  const [noticeText, setNoticeText] = useState('');
+  const fullCelebration = "🎉 Congratulations!\n\nYou have successfully completed all training modules and quizzes.\n\nYour dedication and effort have brought you one step closer to becoming certified.";
+  const fullNotice = "⚠️ Important Notice\n\nBefore taking the Professional Exam, please carefully review the Training Handbook and revisit any modules you feel require additional study.\n\nThe Professional Exam is designed to assess your understanding of all training materials covered throughout the program.\n\nTake your time, review thoroughly, and ensure you are fully prepared before proceeding.";
+
+  useEffect(() => {
+    if (step === 'celebration') {
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+      let i = 0;
+      const timer = setInterval(() => {
+        setCelebrationText(fullCelebration.slice(0, i));
+        i++;
+        if (i > fullCelebration.length) {
+          clearInterval(timer);
+          setTimeout(() => setStep('notice'), 2500);
+        }
+      }, 30);
+      return () => clearInterval(timer);
+    } else {
+      let i = 0;
+      const timer = setInterval(() => {
+        setNoticeText(fullNotice.slice(0, i));
+        i++;
+        if (i > fullNotice.length) clearInterval(timer);
+      }, 20);
+      return () => clearInterval(timer);
+    }
+  }, [step]);
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#0f1413]/90 backdrop-blur-sm p-4">
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-[#1c2624] border border-white/10 p-8 md:p-12 rounded-3xl max-w-2xl w-full text-center space-y-8 shadow-2xl">
+        {step === 'celebration' ? (
+          <p className="text-xl md:text-2xl font-bold text-white leading-relaxed whitespace-pre-wrap">{celebrationText}</p>
+        ) : (
+          <div className="space-y-8">
+            <p className="text-lg text-gray-300 leading-relaxed whitespace-pre-wrap text-left">{noticeText}</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className="px-8 py-4 bg-[#DFFF00] text-[#1a2321] rounded-xl font-black text-lg hover:brightness-110">Proceed to Professional Exam</button>
+              <button onClick={onClose} className="px-8 py-4 bg-white/5 text-white rounded-xl font-bold text-lg hover:bg-white/10">Review Training Modules</button>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+};
+
 export default function TrainingHubPage() {
   const { modules, quizSubmissions, completedModules, submitQuiz, isLoading } = useApplicant();
 
-  // Active Quiz State
-  const [activeQuizModule, setActiveQuizModule] = useState<number | null>(null);
-  const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
-  const [timeLeft, setTimeLeft] = useState(180);
-  const [isQuizFinishedLocally, setIsQuizFinishedLocally] = useState(false);
-  const [localScore, setLocalScore] = useState(0);
-  const [localMaxPoints, setLocalMaxPoints] = useState(0);
-  const [localPassed, setLocalPassed] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isAllTrainingCompleted = quizSubmissions.length >= modules.length && modules.length > 0;
+  const [showExamModal, setShowExamModal] = useState(false);
 
   const totalModulesCount = modules.length || 5;
-
-  // Sync state functions
+  const isAllTrainingCompleted = quizSubmissions.length >= modules.length && modules.length > 0;
+  const [showExamModal, setShowExamModal] = useState(false);
   const isModuleCompleted = (moduleNumber: number) => {
     return completedModules.some(log => log.module_number === moduleNumber);
   };
@@ -598,6 +644,26 @@ export default function TrainingHubPage() {
         </div>
       </div>
       
+      {isAllTrainingCompleted && (
+          <div className="my-8 p-6 md:p-8 bg-gradient-to-r from-[#212c29] to-[#1a2321] border-2 border-[#DFFF00]/30 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                  <div className="p-4 rounded-full bg-[#DFFF00]/10 text-[#DFFF00]">
+                      <Award className="w-8 h-8" />
+                  </div>
+                  <div>
+                      <h3 className="text-xl font-bold text-white">Full Training Completed</h3>
+                      <p className="text-sm text-gray-400 mt-1">You are eligible to take the Professional Certification Exam.</p>
+                  </div>
+              </div>
+              <button 
+                onClick={() => setShowExamModal(true)} 
+                className="bg-[#DFFF00] text-[#1a2321] px-8 py-4 rounded-xl font-extrabold hover:brightness-110 transition-all shadow-[0_0_20px_rgba(223,255,0,0.3)] w-full md:w-auto"
+              >
+                  Take Professional Exam
+              </button>
+          </div>
+      )}
+
       {/* Course Modules Segment */}
       <div className="bg-[#26312f] p-6 md:p-8 rounded-3xl border border-[#dbf0de]/10 shadow-xl">
         <h3 className="text-xl font-bold mb-8 flex items-center gap-3 text-white">
@@ -859,6 +925,7 @@ export default function TrainingHubPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      {showExamModal && <ProfessionalExamModal onClose={() => setShowExamModal(false)} />}
     </div>
   );
 }
