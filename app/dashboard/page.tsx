@@ -2,7 +2,7 @@
 import { useApplicant } from '@/components/ApplicantContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import SiteMapTour from '@/components/layout/SiteMapTour';
-import { BookOpen, Lock, Unlock } from 'lucide-react';
+import { BookOpen, Lock, Unlock, Award, Check } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts';
 
@@ -65,13 +65,30 @@ export default function DashboardPage() {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 bg-[rgb(50,60,55)] p-6 md:p-8 rounded-3xl border border-white/10 shadow-lg flex flex-col md:flex-row items-center gap-6">
-            <div className="w-40 h-40 flex-shrink-0">
-                <ResponsiveContainer width="100%" height="100%">
-                    <RadialBarChart cx="50%" cy="50%" innerRadius="70%" outerRadius="100%" barSize={10} data={progressData} startAngle={90} endAngle={-270}>
-                        <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-                        <RadialBar background={{ fill: 'rgba(255,255,255,0.05)' }} dataKey="value" cornerRadius={10} />
-                    </RadialBarChart>
-                </ResponsiveContainer>
+            <div className="w-40 h-40 flex-shrink-0 relative flex items-center justify-center">
+                <div className="absolute inset-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <RadialBarChart cx="50%" cy="50%" innerRadius="70%" outerRadius="100%" barSize={10} data={progressData} startAngle={90} endAngle={-270}>
+                            <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                            <RadialBar background={{ fill: 'rgba(255,255,255,0.05)' }} dataKey="value" cornerRadius={10} />
+                        </RadialBarChart>
+                    </ResponsiveContainer>
+                </div>
+                <div className="z-10 flex flex-col items-center justify-center">
+                    {applicant.progress_percent === 100 ? (
+                        <div className="relative" id="medal-complete-wrapper">
+                            <Award className="w-12 h-12 text-[#DFFF00] filter drop-shadow-[0_0_12px_rgba(223,255,0,0.6)] animate-pulse" id="complete-medal-icon" />
+                            <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-0.5 border border-[#212c29]" id="complete-check-badge">
+                                <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="relative flex flex-col items-center" id="medal-inprogress-wrapper">
+                            <Award className="w-10 h-10 text-gray-400 opacity-60" id="in-progress-medal-icon" />
+                            <span className="text-[10px] font-bold text-gray-400 mt-0.5">{applicant.progress_percent}%</span>
+                        </div>
+                    )}
+                </div>
             </div>
             <div>
                 <h3 className="text-2xl font-bold flex items-center gap-2 mb-2"><BookOpen className="text-[#DFFF00]" /> {applicant.progress_percent}% Complete</h3>
