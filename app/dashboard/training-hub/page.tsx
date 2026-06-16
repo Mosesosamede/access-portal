@@ -352,12 +352,22 @@ const ProfessionalExamModal = ({ onClose }: { onClose: () => void }) => {
 export default function TrainingHubPage() {
   const { modules, quizSubmissions, completedModules, submitQuiz, isLoading } = useApplicant();
 
-  const isAllTrainingCompleted = quizSubmissions.length >= modules.length && modules.length > 0;
+  // Active Quiz State
+  const [activeQuizModule, setActiveQuizModule] = useState<number | null>(null);
+  const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
+  const [timeLeft, setTimeLeft] = useState(180);
+  const [isQuizFinishedLocally, setIsQuizFinishedLocally] = useState(false);
+  const [localScore, setLocalScore] = useState(0);
+  const [localMaxPoints, setLocalMaxPoints] = useState(0);
+  const [localPassed, setLocalPassed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [showExamModal, setShowExamModal] = useState(false);
+  const isAllTrainingCompleted = quizSubmissions.length >= modules.length && modules.length > 0;
 
   const totalModulesCount = modules.length || 5;
-  const isAllTrainingCompleted = quizSubmissions.length >= modules.length && modules.length > 0;
-  const [showExamModal, setShowExamModal] = useState(false);
   const isModuleCompleted = (moduleNumber: number) => {
     return completedModules.some(log => log.module_number === moduleNumber);
   };
