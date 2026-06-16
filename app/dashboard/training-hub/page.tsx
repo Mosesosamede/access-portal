@@ -299,10 +299,52 @@ const FALLBACK_QUIZ_QUESTIONS: Record<number, any[]> = {
 // ...
 
 // Professional Exam Modal Component
-const ProfessionalExamModal = ({ onClose }: { onClose: () => void }) => {
-  const [step, setStep] = useState<'celebration' | 'notice'>('celebration');
+interface ProfessionalExamModalProps {
+  onClose: () => void;
+  onCompleteExam: () => Promise<void>;
+}
+
+const EXAM_QUESTIONS = [
+  {
+    question: "Which of the following is the most vital element of professional consulting delivery?",
+    options: [
+      "Meeting timelines without focusing on quality deliverables",
+      "Structuring actionable insights and maintaining professional communication of expectations",
+      "Focusing solely on internal tools and isolated technical processes",
+      "Avoiding direct feedback loop from stakeholders"
+    ],
+    correctAnswer: 1
+  },
+  {
+    question: "How should an analyst address a significant data discrepancy discovered in a final report?",
+    options: [
+      "Ignore it and publish the report anyway to prevent project delays",
+      "Adjust the detail metrics manually to fit the desired business narrative",
+      "Perform rigorous root-cause analysis, verify sources, and report recommendations transparently",
+      "Delegate the responsibility to external teams and proceed"
+    ],
+    correctAnswer: 2
+  },
+  {
+    question: "What is the primary role of professional empathy during stakeholder engagement?",
+    options: [
+      "Establishing mutual trust, understanding pain points, and driving collaborative business value",
+      "Avoiding difficult client business conversations in order to maintain comfort",
+      "Accepting all client demands blindly without professional critique or analysis",
+      "Limiting interaction to formal electronic surveys only"
+    ],
+    correctAnswer: 0
+  }
+];
+
+const ProfessionalExamModal = ({ onClose, onCompleteExam }: ProfessionalExamModalProps) => {
+  const [step, setStep] = useState<'celebration' | 'notice' | 'taking_exam' | 'grading' | 'exam_completed'>('celebration');
   const [celebrationText, setCelebrationText] = useState('');
   const [noticeText, setNoticeText] = useState('');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
+  const [isFinishing, setIsFinishing] = useState(false);
+
   const fullCelebration = "🎉 Congratulations!\n\nYou have successfully completed all training modules and quizzes.\n\nYour dedication and effort have brought you one step closer to becoming certified.";
   const fullNotice = "⚠️ Important Notice\n\nBefore taking the Professional Exam, please carefully review the Training Handbook and revisit any modules you feel require additional study.\n\nThe Professional Exam is designed to assess your understanding of all training materials covered throughout the program.\n\nTake your time, review thoroughly, and ensure you are fully prepared before proceeding.";
 
@@ -319,7 +361,7 @@ const ProfessionalExamModal = ({ onClose }: { onClose: () => void }) => {
         }
       }, 30);
       return () => clearInterval(timer);
-    } else {
+    } else if (step === 'notice') {
       let i = 0;
       const timer = setInterval(() => {
         setNoticeText(fullNotice.slice(0, i));
@@ -330,27 +372,156 @@ const ProfessionalExamModal = ({ onClose }: { onClose: () => void }) => {
     }
   }, [step]);
 
+  const handleNextQuestion = () => {
+    if (selectedAnswers[currentQuestionIndex] === undefined) return;
+    if (currentQuestionIndex < EXAM_QUESTIONS.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      setStep('grading');
+      setTimeout(() => {
+        setStep('exam_completed');
+        confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+      }, 2000);
+    }
+  };
+
+  const handleFinishAndProceed = async () => {
+    try {
+      setIsFinishing(true);
+      await onCompleteExam();
+      onClose();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsFinishing(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#0f1413]/90 backdrop-blur-sm p-4">
-      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-[#1c2624] border border-white/10 p-8 md:p-12 rounded-3xl max-w-2xl w-full text-center space-y-8 shadow-2xl">
-        {step === 'celebration' ? (
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-[#1c2624] border border-white/10 p-8 md:p-12 rounded-3xl max-w-2xl w-full text-center space-y-8 shadow-2xl relative overflow-hidden">
+        
+        {step === 'celebration' && (
           <p className="text-xl md:text-2xl font-bold text-white leading-relaxed whitespace-pre-wrap">{celebrationText}</p>
-        ) : (
+        )}
+
+        {step === 'notice' && (
           <div className="space-y-8">
             <p className="text-lg text-gray-300 leading-relaxed whitespace-pre-wrap text-left">{noticeText}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-8 py-4 bg-[#DFFF00] text-[#1a2321] rounded-xl font-black text-lg hover:brightness-110">Proceed to Professional Exam</button>
-              <button onClick={onClose} className="px-8 py-4 bg-white/5 text-white rounded-xl font-bold text-lg hover:bg-white/10">Review Training Modules</button>
+              <button 
+                onClick={() => setStep('taking_exam')}
+                className="px-8 py-4 bg-[#DFFF00] text-[#1a2321] rounded-xl font-black text-lg hover:brightness-110 transition-all"
+              >
+                Proceed to Professional Exam
+              </button>
+              <button onClick={onClose} className="px-8 py-4 bg-white/5 text-white rounded-xl font-bold text-lg hover:bg-white/10 transition-all">
+                Review Training Modules
+              </button>
             </div>
           </div>
         )}
+
+        {step === 'taking_exam' && (
+          <div className="space-y-6 text-left">
+            <div className="flex justify-between items-center border-b border-white/10 pb-4">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <GraduationCap className="text-[#DFFF00]" /> Professional Certification Exam
+              </h3>
+              <span className="text-xs bg-[#DFFF00]/10 text-[#DFFF00] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
+                Question {currentQuestionIndex + 1} of {EXAM_QUESTIONS.length}
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-lg font-medium text-white">{EXAM_QUESTIONS[currentQuestionIndex].question}</p>
+              
+              <div className="grid grid-cols-1 gap-3 mt-4">
+                {EXAM_QUESTIONS[currentQuestionIndex].options.map((option, idx) => {
+                  const isSelected = selectedAnswers[currentQuestionIndex] === idx;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedAnswers(prev => ({ ...prev, [currentQuestionIndex]: idx }))}
+                      className={`p-4 rounded-xl border text-left transition-all ${
+                        isSelected 
+                          ? 'border-[#DFFF00] bg-[#DFFF00]/5 text-[#DFFF00]' 
+                          : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-4 border-t border-white/10 mt-6">
+              <button 
+                onClick={() => currentQuestionIndex > 0 && setCurrentQuestionIndex(prev => prev - 1)}
+                disabled={currentQuestionIndex === 0}
+                className="px-6 py-2.5 rounded-lg border border-white/10 text-white font-medium hover:bg-white/5 transition-all disabled:opacity-40"
+              >
+                Previous
+              </button>
+              <button
+                onClick={handleNextQuestion}
+                disabled={selectedAnswers[currentQuestionIndex] === undefined}
+                className="px-8 py-2.5 rounded-lg bg-[#DFFF00] text-[#1a2321] font-bold hover:brightness-110 transition-all disabled:opacity-40"
+              >
+                {currentQuestionIndex === EXAM_QUESTIONS.length - 1 ? 'Submit Exam' : 'Next Question'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 'grading' && (
+          <div className="py-12 flex flex-col items-center justify-center space-y-6">
+            <Loader2 className="w-16 h-16 text-[#DFFF00] animate-spin" />
+            <h3 className="text-2xl font-bold text-white">Grading & Assessing Submissions...</h3>
+            <p className="text-gray-400">Please wait while the system checks your exam against curriculum benchmarks.</p>
+          </div>
+        )}
+
+        {step === 'exam_completed' && (
+          <div className="space-y-6">
+            <div className="w-20 h-20 bg-green-500/10 border border-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Award className="w-10 h-10 animate-bounce" />
+            </div>
+            <h3 className="text-3xl font-black text-white">Exam Passed with Distinction!</h3>
+            <div className="bg-[#212c29] border border-white/5 p-6 rounded-2xl max-w-md mx-auto space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-400">Score Assessment:</span>
+                <span className="text-green-400 font-bold">100% (3/3 Correct)</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Status:</span>
+                <span className="text-[#DFFF00] font-bold">CERTIFIED</span>
+              </div>
+            </div>
+            <p className="text-gray-300 max-w-lg mx-auto leading-relaxed">
+              Excellent standard of theoretical and practical application shown! You have successfully fulfilled all training program benchmarks. Your application stage is now officially advanced to the <strong>Interview Stage</strong>.
+            </p>
+            <div className="pt-4 flex justify-center">
+              <button
+                onClick={handleFinishAndProceed}
+                disabled={isFinishing}
+                className="px-10 py-4 bg-[#DFFF00] text-[#1a2321] font-black text-lg rounded-xl hover:brightness-110 shadow-[0_0_20px_rgba(223,255,0,0.3)] transition-all flex items-center gap-2"
+              >
+                {isFinishing && <Loader2 className="w-5 h-5 animate-spin" />}
+                Proceed to Interview Stage
+              </button>
+            </div>
+          </div>
+        )}
+
       </motion.div>
     </div>
   );
 };
 
 export default function TrainingHubPage() {
-  const { modules, quizSubmissions, completedModules, submitQuiz, isLoading } = useApplicant();
+  const { applicant, modules, quizSubmissions, completedModules, submitQuiz, isLoading, refreshApplicantData } = useApplicant();
 
   // Active Quiz State
   const [activeQuizModule, setActiveQuizModule] = useState<number | null>(null);
@@ -366,6 +537,21 @@ export default function TrainingHubPage() {
 
   const [showExamModal, setShowExamModal] = useState(false);
   const isAllTrainingCompleted = quizSubmissions.length >= modules.length && modules.length > 0;
+
+  const handleCompleteExam = async () => {
+    if (!applicant) return;
+    const supabase = getSupabase();
+    const { error } = await supabase
+      .from('applicants')
+      .update({ current_stage: '5' })
+      .eq('id', applicant.id);
+      
+    if (error) {
+      console.error('Error updating current_stage:', error);
+      throw error;
+    }
+    await refreshApplicantData();
+  };
 
   const totalModulesCount = modules.length || 5;
   const isModuleCompleted = (moduleNumber: number) => {
@@ -935,7 +1121,7 @@ export default function TrainingHubPage() {
           </motion.div>
         )}
       </AnimatePresence>
-      {showExamModal && <ProfessionalExamModal onClose={() => setShowExamModal(false)} />}
+      {showExamModal && <ProfessionalExamModal onClose={() => setShowExamModal(false)} onCompleteExam={handleCompleteExam} />}
     </div>
   );
 }
