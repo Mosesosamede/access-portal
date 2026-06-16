@@ -1,11 +1,13 @@
 'use client';
+import { useState } from 'react';
 import { useApplicant } from '@/components/ApplicantContext';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, User as UserIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default function ProfilePage() {
   const { applicant, isLoading } = useApplicant();
+  const [imageError, setImageError] = useState(false);
 
   if (isLoading) {
     return (
@@ -16,6 +18,15 @@ export default function ProfilePage() {
   }
 
   if (!applicant) return <div className="text-red-400">Error loading data.</div>;
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 md:px-6 pt-8 pb-12">
@@ -28,11 +39,25 @@ export default function ProfilePage() {
       
       <div className="bg-[#26312f] p-6 md:p-10 rounded-3xl border border-[#dbf0de]/10 shadow-xl space-y-10">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-              {applicant.passport_photo_url && (
-                  <div className="relative w-36 h-36 flex-shrink-0 rounded-2xl overflow-hidden shadow-lg border-2 border-[#dbf0de]/20">
-                      <Image src={applicant.passport_photo_url} alt="Profile" fill className="object-cover" referrerPolicy="no-referrer" />
-                  </div>
-              )}
+              <div className="relative w-36 h-36 flex-shrink-0 rounded-2xl overflow-hidden shadow-lg border-2 border-[#dbf0de]/20 bg-[#1a2321] flex items-center justify-center">
+                  {applicant.passport_photo_url && !imageError ? (
+                      <Image 
+                        src={applicant.passport_photo_url} 
+                        alt={applicant.full_name || 'Profile'} 
+                        fill 
+                        className="object-cover" 
+                        referrerPolicy="no-referrer"
+                        onError={() => {
+                            console.error('Failed to load image:', applicant.passport_photo_url);
+                            setImageError(true);
+                        }}
+                      />
+                  ) : (
+                      <span className="text-4xl font-bold text-[#dbf0de]">
+                          {applicant.full_name ? getInitials(applicant.full_name) : <UserIcon size={48} />}
+                      </span>
+                  )}
+              </div>
               <div className="text-center sm:text-left flex flex-col gap-2">
                   <h3 className="text-3xl font-bold text-white">{applicant.full_name}</h3>
                   <p className="text-gray-400 font-medium">{applicant.email}</p>
