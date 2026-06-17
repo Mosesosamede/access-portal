@@ -13,6 +13,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { applicant, quizSubmissions, isLoading, user } = useApplicant();
   const [profileOpen, setProfileOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [lockedModal, setLockedModal] = useState(false);
   
   if (isLoading) {
@@ -58,12 +59,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setSidebarOpen(false)}></div>}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 w-64 border-r border-[#dbf0de]/10 bg-[#1a2321] p-6 z-50 transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 border-r border-[#dbf0de]/10 bg-[#1a2321] p-6 transition-all duration-300 md:static ${sidebarOpen ? 'w-64 translate-x-0' : '-translate-x-full md:translate-x-0'} ${isSidebarCollapsed ? 'md:w-20' : 'md:w-64'}`}>
         <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl font-bold text-[#dbf0de]">Deloxe</h2>
+            <h2 className={`text-xl font-bold text-[#dbf0de] ${isSidebarCollapsed ? 'hidden' : 'block'}`}>Deloxe</h2>
             <button onClick={() => setSidebarOpen(false)} className="md:hidden"><X /></button>
+            <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="hidden md:block text-gray-400 hover:text-[#dbf0de]">
+              {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            </button>
         </div>
-        <NavLinks pathname={pathname} setSidebarOpen={setSidebarOpen} isLocked={isLocked} setLockedModal={setLockedModal} />
+        <NavLinks pathname={pathname} setSidebarOpen={setSidebarOpen} isLocked={isLocked} setLockedModal={setLockedModal} isSidebarCollapsed={isSidebarCollapsed} />
       </aside>
 
       {/* Main Content */}
@@ -98,7 +102,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 }
 
-function NavLinks({ pathname, setSidebarOpen, isLocked, setLockedModal }: any) {
+function NavLinks({ pathname, setSidebarOpen, isLocked, setLockedModal, isSidebarCollapsed }: any) {
   return (
     <nav className="space-y-4">
       {[
@@ -114,20 +118,20 @@ function NavLinks({ pathname, setSidebarOpen, isLocked, setLockedModal }: any) {
           onClick={() => setSidebarOpen(false)}
           className={`flex items-center gap-3 p-3 rounded-xl transition ${pathname === link.href ? 'bg-[#DFFF00] text-[rgb(38,47,44)]' : 'hover:bg-white/5'}`}
         >
-          <link.icon size={20} />
-          {link.label}
+          <link.icon size={20} className="flex-shrink-0" />
+          <span className={`${isSidebarCollapsed ? 'hidden' : 'block'}`}>{link.label}</span>
         </Link>
       ))}
       <div className="relative">
         {isLocked ? (
             <button onClick={() => {setLockedModal(true); setSidebarOpen(false);}} className="flex w-full items-center justify-between gap-3 p-3 rounded-xl hover:bg-white/5 transition opacity-40 cursor-not-allowed">
-                <span className="flex items-center gap-3"><Briefcase size={20} /> Job Pool</span>
-                <Lock size={16} />
+                <span className="flex items-center gap-3"><Briefcase size={20} /> <span className={`${isSidebarCollapsed ? 'hidden' : 'block'}`}>Job Pool</span></span>
+                <Lock size={16} className={`${isSidebarCollapsed ? 'hidden' : 'block'}`} />
             </button>
         ) : (
             <Link href="/dashboard/job-pool" onClick={() => setSidebarOpen(false)} className={`flex items-center gap-3 p-3 rounded-xl transition ${pathname === '/dashboard/job-pool' ? 'bg-[#DFFF00] text-[rgb(38,47,44)]' : 'hover:bg-white/5'}`}>
-                <Briefcase size={20} />
-                Job Pool
+                <Briefcase size={20} className="flex-shrink-0" />
+                <span className={`${isSidebarCollapsed ? 'hidden' : 'block'}`}>Job Pool</span>
             </Link>
         )}
       </div>

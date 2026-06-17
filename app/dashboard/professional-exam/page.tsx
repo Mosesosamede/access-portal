@@ -69,7 +69,7 @@ export default function ProfessionalExamPage() {
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
 
   // Timer State
-  const [timeLeft, setTimeLeft] = useState<number>(4500); // 75 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState<number>(3600); // 60 minutes in seconds
   const [timerUrgent, setTimerUrgent] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -217,7 +217,7 @@ export default function ProfessionalExamPage() {
 
             // Sync countdown
             const elapsed = Math.floor((Date.now() - new Date(sData.started_at).getTime()) / 1000);
-            const totalDuration = 75 * 60; // 75 mins = 4500s
+            const totalDuration = 60 * 60; // 60 mins = 3600s
             const remaining = Math.max(0, totalDuration - elapsed);
             setTimeLeft(remaining);
 
@@ -340,7 +340,7 @@ export default function ProfessionalExamPage() {
       setSubmission(sData);
       setSavedAnswers({});
       setIsExamRunning(true);
-      setTimeLeft(4500); // 75 minutes
+      setTimeLeft(3600); // 60 minutes
     } catch (err) {
       console.error('Error starting exam:', err);
     } finally {
@@ -804,7 +804,7 @@ export default function ProfessionalExamPage() {
             </h1>
             
             <p className="text-base text-gray-300 leading-relaxed max-w-xl">
-              You have completed all 5 training modules and scored 100% on the curriculum quizzes. You are now authorized to sit for the final Professional Certification Exam.
+              You have completed all 5 training modules. You are now authorized to sit for the final Professional Certification Exam.
             </p>
           </div>
 
@@ -833,7 +833,7 @@ export default function ProfessionalExamPage() {
               <ul className="space-y-2 text-gray-400">
                 <li className="flex items-start gap-2.5">
                   <Check className="w-4 h-4 text-[#DFFF00] mt-0.5 flex-shrink-0" />
-                  <span>You have exactly <strong>75 minutes (1h 15m)</strong> to complete.</span>
+                  <span>You have exactly <strong>60 minutes (1h)</strong> to complete.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Check className="w-4 h-4 text-[#DFFF00] mt-0.5 flex-shrink-0" />
