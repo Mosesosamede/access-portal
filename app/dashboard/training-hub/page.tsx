@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useApplicant } from '@/components/ApplicantContext';
 import { Loader2, Lock, Unlock, ArrowLeft, BookOpen, GraduationCap, CheckCircle2, Clock, Award, ChevronRight, ChevronLeft, Check, Play, FileText, XCircle, Sparkles, AlertCircle } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
@@ -338,6 +339,7 @@ const EXAM_QUESTIONS = [
 ];
 
 const ProfessionalExamModal = ({ onClose, onCompleteExam }: ProfessionalExamModalProps) => {
+  const router = useRouter();
   const [step, setStep] = useState<'celebration' | 'notice' | 'taking_exam' | 'grading' | 'exam_completed'>('celebration');
   const [celebrationText, setCelebrationText] = useState('');
   const [noticeText, setNoticeText] = useState('');
@@ -410,7 +412,10 @@ const ProfessionalExamModal = ({ onClose, onCompleteExam }: ProfessionalExamModa
             <p className="text-lg text-gray-300 leading-relaxed whitespace-pre-wrap text-left">{noticeText}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button 
-                onClick={() => setStep('taking_exam')}
+                onClick={() => {
+                  router.push('/dashboard/professional-exam');
+                  onClose();
+                }}
                 className="px-8 py-4 bg-[#DFFF00] text-[#1a2321] rounded-xl font-black text-lg hover:brightness-110 transition-all"
               >
                 Proceed to Professional Exam
