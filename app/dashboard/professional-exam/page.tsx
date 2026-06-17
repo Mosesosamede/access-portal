@@ -81,11 +81,15 @@ export default function ProfessionalExamPage() {
       setSubmitting(true);
 
       // 1. Fetch exact latest synchronized answers
-      const { data: updatedAnswers } = await supabase
+      const { data: updatedAnswers, error: answersErr } = await supabase
         .from('professional_exam_answers')
         .select('question_id, selected_answer, is_correct')
         .eq('submission_id', subId);
 
+      if (answersErr) {
+        console.error('Error fetching updated answers:', answersErr);
+      }
+      
       const answersList = updatedAnswers || [];
 
       // 2. Calculate score
@@ -135,11 +139,15 @@ export default function ProfessionalExamPage() {
       confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
 
       // Reload latest submission
-      const { data: updatedSub } = await supabase
+      const { data: updatedSub, error: updateErr } = await supabase
         .from('professional_exam_submissions')
         .select('*')
         .eq('id', subId)
-        .single();
+        .maybeSingle();
+
+      if (updateErr) {
+        console.error('Error fetching updated submission:', updateErr);
+      }
 
       if (updatedSub) {
         setSubmission(updatedSub);

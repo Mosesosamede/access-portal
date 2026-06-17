@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { LayoutDashboard, BookOpen, GraduationCap, Briefcase, User, Settings, LogOut, ChevronDown, Lock, Loader2, Menu, X, Award } from 'lucide-react';
+import { LayoutDashboard, BookOpen, GraduationCap, Briefcase, User, Settings, LogOut, ChevronDown, Lock, Loader2, Menu, X, Award, ChevronRight, ChevronLeft } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 import { useApplicant } from '@/components/ApplicantContext';
 

@@ -22,16 +22,21 @@ export default function DashboardPage() {
       try {
         setLoadingExam(true);
         const supabase = getSupabase();
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('professional_exam_submissions')
           .select('score, percentage')
           .eq('applicant_id', applicant.id)
           .maybeSingle();
+
+        if (error) {
+          console.error('Supabase query error (professional_exam_submissions):', error);
+        }
+
         if (data) {
           setExamSubmission(data);
         }
       } catch (err) {
-        console.error('Error loading exam details on dashboard:', err);
+        console.error('Unexpected error loading exam details on dashboard:', err);
       } finally {
         setLoadingExam(false);
       }
@@ -155,7 +160,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Dynamic Column 2: If Exam Taken, Show Result Card; Else show Exam Locked/Inactive message */}
-        {stageInt >= 5 ? (
+        {loadingExam ? (
+          <div className="bg-[rgb(50,60,55)] p-6 md:p-8 rounded-3xl border border-white/10 shadow-lg flex flex-col justify-center items-center gap-4 md:col-span-1">
+            <Loader2 className="animate-spin text-[#DFFF00]" size={36} />
+            <p className="text-gray-400 text-sm">Loading exam results...</p>
+          </div>
+        ) : stageInt >= 5 ? (
           <div className="bg-[rgb(50,60,55)] p-6 md:p-8 rounded-3xl border border-white/10 shadow-lg flex flex-col justify-between gap-4 md:col-span-1" id="dashboard-exam-outcome-badge">
             <div className="flex items-center justify-between border-b border-white/5 pb-2">
               <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
