@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { LayoutDashboard, BookOpen, GraduationCap, Briefcase, User, Settings, LogOut, ChevronDown, Lock, Loader2, Menu, X, Award, ChevronRight, ChevronLeft } from 'lucide-react';
+import { LayoutDashboard, BookOpen, GraduationCap, Briefcase, User, Settings, LogOut, ChevronDown, Lock, Loader2, Menu, X, Award, ChevronRight, ChevronLeft, MoreHorizontal } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 import { useApplicant } from '@/components/ApplicantContext';
 
@@ -18,8 +18,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[rgb(38,47,44)] flex items-center justify-center">
-        <Loader2 size={48} className="animate-spin text-[#DFFF00]" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 size={48} className="animate-spin text-blue-600" />
       </div>
     );
   }
@@ -28,9 +28,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/login');
     return null;
   }
-
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
 
   const handleLogout = async () => {
     const supabase = getSupabase();
@@ -41,125 +38,127 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const completedQuizzesCount = Array.from(new Set(quizSubmissions.map(sub => sub.module_number))).length;
   const isLocked = !applicant || completedQuizzesCount < 5;
 
+  const navItems = [
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/handbook', label: 'Handbook', icon: BookOpen },
+    { href: '/dashboard/training-hub', label: 'Training', icon: GraduationCap },
+    { href: '/dashboard/professional-exam', label: 'Exam', icon: Award },
+    { href: '/dashboard/profile', label: 'Profile', icon: User },
+    { href: '/dashboard/job-pool', label: 'Job Pool', icon: Briefcase, isLocked: isLocked },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#1a2321] text-[#E0E6ED] flex">
-      <AnimatePresence>
-        {lockedModal && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setLockedModal(false)}>
-                <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="bg-[#26312f] p-8 rounded-3xl border border-white/10 text-center max-w-sm" onClick={e => e.stopPropagation()}>
-                    <Lock size={48} className="text-[#DFFF00] mx-auto mb-4" />
-                    <h3 className="text-xl font-bold mb-2 text-white">Job Pool Locked</h3>
-                    <p className="text-sm text-gray-400">Please complete 100% of your training to unlock the Job Pool.</p>
-                </motion.div>
-            </motion.div>
-        )}
-      </AnimatePresence>
-
+    <div className="min-h-screen bg-gray-50 text-gray-900 flex">
       {/* Sidebar Overlay */}
-      {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setSidebarOpen(false)}></div>}
+      {sidebarOpen && <div className="fixed inset-0 bg-black/20 z-40 md:hidden" onClick={() => setSidebarOpen(false)}></div>}
 
-      {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 border-r border-[#dbf0de]/10 bg-[#1a2321] p-6 transition-all duration-300 md:static ${sidebarOpen ? 'w-64 translate-x-0' : '-translate-x-full md:translate-x-0'} ${isSidebarCollapsed ? 'md:w-20' : 'md:w-64'}`}>
-        <div className="flex items-center justify-between mb-8">
-            <h2 className={`text-xl font-bold text-[#dbf0de] ${isSidebarCollapsed ? 'hidden' : 'block'}`}>Deloxe</h2>
-            <button onClick={() => setSidebarOpen(false)} className="md:hidden"><X /></button>
-            <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="hidden md:block text-gray-400 hover:text-[#dbf0de] transition-colors">
-              <Menu size={20} />
+      {/* Desktop Sidebar */}
+      <aside className={`hidden md:flex flex-col border-r border-gray-200 bg-white p-4 transition-all duration-300 ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
+        <div className="flex items-center justify-between mb-8 px-2">
+            <h2 className={`text-lg font-bold text-gray-900 ${isSidebarCollapsed ? 'hidden' : 'block'}`}>Deloxe</h2>
+            <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="text-gray-500 hover:text-gray-900 transition-colors">
+              {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
             </button>
         </div>
-        <NavLinks pathname={pathname} setSidebarOpen={setSidebarOpen} isLocked={isLocked} setLockedModal={setLockedModal} isSidebarCollapsed={isSidebarCollapsed} />
+        <NavLinks navItems={navItems} pathname={pathname} isCollapsed={isSidebarCollapsed} isLocked={isLocked} setLockedModal={setLockedModal} />
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-0">
         {/* Top Bar */}
-        <header className="border-b border-[#dbf0de]/10 bg-[#1a2321]/80 backdrop-blur-lg p-4 flex justify-between items-center sticky top-0 z-30">
-          <button onClick={() => setSidebarOpen(true)} className="md:hidden"><Menu /></button>
-          <h1 className="text-sm md:text-lg font-semibold truncate text-[#dbf0de]">{greeting}, {applicant?.full_name || user?.email || 'Candidate'}</h1>
+        <header className="border-b border-gray-200 bg-white/80 backdrop-blur-md p-4 flex justify-between items-center sticky top-0 z-30">
+          <h1 className="text-lg font-semibold text-gray-900">Deloxe</h1>
           <div className="relative">
-            <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 px-3 py-1.5 bg-[#dbf0de]/5 rounded-full hover:bg-[#dbf0de]/10 transition text-[#dbf0de]">
+            <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full hover:bg-gray-200 transition text-gray-800 text-sm font-medium">
               <User size={16} />
-              <ChevronDown size={12} />
+              <span>{applicant?.full_name || 'Candidate'}</span>
             </button>
             {profileOpen && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute right-0 mt-2 w-48 bg-[#26312f] border border-[#dbf0de]/10 rounded-xl overflow-hidden shadow-xl z-50">
-                <Link href="/dashboard/settings" className="block p-3 hover:bg-[#dbf0de]/5 text-[#dbf0de]">Settings</Link>
-                <Link href="/dashboard/profile" className="block p-3 hover:bg-[#dbf0de]/5 text-[#dbf0de]">Profile</Link>
-                <Link href="/dashboard/skills" className="block p-3 hover:bg-[#dbf0de]/5 text-[#dbf0de]">Skills</Link>
-                <Link href="/dashboard/preferences" className="block p-3 hover:bg-[#dbf0de]/5 text-[#dbf0de]">Preferences</Link>
-                <button onClick={handleLogout} className="w-full text-left p-3 text-red-400 hover:bg-white/5 flex items-center gap-2">
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg z-50 p-1">
+                <Link href="/dashboard/settings" className="block p-2 hover:bg-gray-100 rounded-lg text-gray-700 text-sm">Settings</Link>
+                <button onClick={handleLogout} className="w-full text-left p-2 text-red-600 hover:bg-red-50 rounded-lg text-sm flex items-center gap-2">
                   <LogOut size={16} /> Logout
                 </button>
               </motion.div>
             )}
           </div>
         </header>
+
         <main className="p-4 md:p-8 flex-1 w-full max-w-7xl mx-auto">
           {children}
         </main>
       </div>
+      
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 flex justify-between items-center z-40">
+        {navItems.slice(0, 4).map(item => (
+            <Link key={item.href} href={item.href} className={`flex flex-col items-center gap-1 p-2 ${pathname === item.href ? 'text-blue-600' : 'text-gray-500'}`}>
+                <item.icon size={22} />
+                <span className="text-[10px] font-medium">{item.label}</span>
+            </Link>
+        ))}
+        <button onClick={() => setSidebarOpen(true)} className="flex flex-col items-center gap-1 p-2 text-gray-500">
+            <MoreHorizontal size={22} />
+            <span className="text-[10px] font-medium">Menu</span>
+        </button>
+      </nav>
+      
+      {/* Mobile Menu Drawer */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="md:hidden fixed inset-y-0 right-0 z-50 w-3/4 bg-white shadow-2xl p-6 border-l border-gray-200">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-lg font-bold">Menu</h2>
+              <button onClick={() => setSidebarOpen(false)}><X /></button>
+            </div>
+            <NavLinks navItems={navItems} pathname={pathname} isCollapsed={false} isLocked={isLocked} setLockedModal={setLockedModal} isMobile={true} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function NavLinks({ pathname, setSidebarOpen, isLocked, setLockedModal, isSidebarCollapsed }: any) {
+function NavLinks({ navItems, pathname, isCollapsed, isLocked, setLockedModal, isMobile = false }: any) {
   return (
-    <nav className="space-y-4">
-      {[
-        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { href: '/handbook', label: 'My Handbook', icon: BookOpen },
-        { href: '/dashboard/training-hub', label: 'Training Hub', icon: GraduationCap },
-        { href: '/dashboard/professional-exam', label: 'Professional Exam', icon: Award },
-        { href: '/dashboard/profile', label: 'Profile', icon: User },
-      ].map(link => {
+    <nav className="space-y-1">
+      {navItems.map((link: any) => {
         const isActive = pathname === link.href;
+        const isLockedItem = !!link.isLocked;
+        
+        if (isLockedItem) {
+          return (
+            <button 
+              key={link.href}
+              onClick={() => setLockedModal(true)}
+              className={`flex items-center transition-all opacity-40 cursor-not-allowed ${
+                isCollapsed 
+                  ? 'w-12 h-12 rounded-full mx-auto justify-center text-gray-500 hover:bg-gray-100' 
+                  : 'gap-3 p-3 rounded-xl text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <link.icon size={20} className="flex-shrink-0" />
+              {!isCollapsed && <span className="flex-1 text-left">{link.label}</span>}
+              {!isCollapsed && <Lock size={14} />}
+            </button>
+          );
+        }
+
         return (
           <Link 
             key={link.href} 
-            href={link.href} 
-            onClick={() => setSidebarOpen(false)}
+            href={link.href}
             className={`flex items-center transition-all ${
-              isSidebarCollapsed 
-                ? `w-11 h-11 rounded-full mx-auto justify-center ${isActive ? 'bg-[#DFFF00] text-[rgb(38,47,44)] shadow-[0_0_12px_rgba(223,255,0,0.4)]' : 'hover:bg-white/5 text-[#E0E6ED]'}` 
-                : `gap-3 p-3 rounded-xl ${isActive ? 'bg-[#DFFF00] text-[rgb(38,47,44)]' : 'hover:bg-white/5 text-[#E0E6ED]'}`
+              isCollapsed 
+                ? `w-12 h-12 rounded-full mx-auto justify-center ${isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:bg-gray-100'}` 
+                : `gap-3 p-3 rounded-xl ${isActive ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`
             }`}
           >
             <link.icon size={20} className="flex-shrink-0" />
-            <span className={`${isSidebarCollapsed ? 'hidden' : 'block'}`}>{link.label}</span>
+            {!isCollapsed && <span>{link.label}</span>}
           </Link>
         );
       })}
-      <div className="relative">
-        {isLocked ? (
-            <button 
-              onClick={() => {setLockedModal(true); setSidebarOpen(false);}} 
-              className={`flex items-center transition opacity-40 cursor-not-allowed ${
-                isSidebarCollapsed 
-                  ? 'w-11 h-11 rounded-full mx-auto justify-center hover:bg-white/5' 
-                  : 'w-full gap-3 p-3 rounded-xl justify-between hover:bg-white/5'
-              }`}
-            >
-                <span className="flex items-center gap-3">
-                  <Briefcase size={20} className="flex-shrink-0" /> 
-                  <span className={`${isSidebarCollapsed ? 'hidden' : 'block'}`}>Job Pool</span>
-                </span>
-                <Lock size={16} className={`${isSidebarCollapsed ? 'hidden' : 'block'}`} />
-            </button>
-        ) : (
-            <Link 
-              href="/dashboard/job-pool" 
-              onClick={() => setSidebarOpen(false)} 
-              className={`flex items-center transition-all ${
-                pathname === '/dashboard/job-pool' 
-                  ? (isSidebarCollapsed ? 'bg-[#DFFF00] text-[rgb(38,47,44)] w-11 h-11 rounded-full mx-auto justify-center shadow-[0_0_12px_rgba(223,255,0,0.4)]' : 'bg-[#DFFF00] text-[rgb(38,47,44)] p-3 rounded-xl gap-3')
-                  : (isSidebarCollapsed ? 'hover:bg-white/5 w-11 h-11 rounded-full mx-auto justify-center' : 'hover:bg-white/5 p-3 rounded-xl gap-3')
-              }`}
-            >
-                <Briefcase size={20} className="flex-shrink-0" />
-                <span className={`${isSidebarCollapsed ? 'hidden' : 'block'}`}>Job Pool</span>
-            </Link>
-        )}
-      </div>
     </nav>
-  )
+  );
 }
