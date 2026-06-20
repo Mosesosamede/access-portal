@@ -76,8 +76,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Top Bar */}
         <header className="border-b border-[#dbf0de]/10 bg-[#1a2321]/80 backdrop-blur-md p-4 flex justify-between items-center sticky top-0 z-30">
           <h1 className="text-lg font-semibold text-[#dbf0de]">Deloxe</h1>
-          <div className="hidden md:block">
-            <span className="text-[#dbf0de]/60 text-sm">{applicant?.full_name || 'Candidate'}</span>
+          <div className="relative">
+            <button 
+              onClick={() => setProfileOpen(!profileOpen)} 
+              className="flex items-center gap-2 px-3 py-1.5 bg-[#dbf0de]/5 rounded-full hover:bg-[#dbf0de]/10 transition text-[#dbf0de] text-sm font-medium"
+            >
+              <User size={16} />
+              <ChevronDown size={12} />
+            </button>
+            {profileOpen && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                className="absolute right-0 mt-2 w-48 bg-[#26312f] border border-[#dbf0de]/10 rounded-xl overflow-hidden shadow-lg z-50 p-1"
+              >
+                <Link href="/dashboard/profile" className="block p-2 hover:bg-[#dbf0de]/5 rounded-lg text-[#dbf0de] text-sm">Profile</Link>
+                <Link href="/dashboard/settings" className="block p-2 hover:bg-[#dbf0de]/5 rounded-lg text-[#dbf0de] text-sm">Settings</Link>
+                <Link href="/dashboard/preferences" className="block p-2 hover:bg-[#dbf0de]/5 rounded-lg text-[#dbf0de] text-sm">Preferences</Link>
+                <button onClick={handleLogout} className="w-full text-left p-2 text-red-400 hover:bg-white/5 rounded-lg text-sm flex items-center gap-2 mt-1 border-t border-[#dbf0de]/10">
+                  <LogOut size={16} /> Logout
+                </button>
+              </motion.div>
+            )}
           </div>
         </header>
 
