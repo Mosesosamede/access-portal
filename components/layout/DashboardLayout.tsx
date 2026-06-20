@@ -63,8 +63,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex items-center justify-between mb-8">
             <h2 className={`text-xl font-bold text-[#dbf0de] ${isSidebarCollapsed ? 'hidden' : 'block'}`}>Deloxe</h2>
             <button onClick={() => setSidebarOpen(false)} className="md:hidden"><X /></button>
-            <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="hidden md:block text-gray-400 hover:text-[#dbf0de]">
-              {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="hidden md:block text-gray-400 hover:text-[#dbf0de] transition-colors">
+              <Menu size={20} />
             </button>
         </div>
         <NavLinks pathname={pathname} setSidebarOpen={setSidebarOpen} isLocked={isLocked} setLockedModal={setLockedModal} isSidebarCollapsed={isSidebarCollapsed} />
@@ -111,25 +111,50 @@ function NavLinks({ pathname, setSidebarOpen, isLocked, setLockedModal, isSideba
         { href: '/dashboard/training-hub', label: 'Training Hub', icon: GraduationCap },
         { href: '/dashboard/professional-exam', label: 'Professional Exam', icon: Award },
         { href: '/dashboard/profile', label: 'Profile', icon: User },
-      ].map(link => (
-        <Link 
-          key={link.href} 
-          href={link.href} 
-          onClick={() => setSidebarOpen(false)}
-          className={`flex items-center gap-3 p-3 rounded-xl transition ${pathname === link.href ? 'bg-[#DFFF00] text-[rgb(38,47,44)]' : 'hover:bg-white/5'}`}
-        >
-          <link.icon size={20} className="flex-shrink-0" />
-          <span className={`${isSidebarCollapsed ? 'hidden' : 'block'}`}>{link.label}</span>
-        </Link>
-      ))}
+      ].map(link => {
+        const isActive = pathname === link.href;
+        return (
+          <Link 
+            key={link.href} 
+            href={link.href} 
+            onClick={() => setSidebarOpen(false)}
+            className={`flex items-center transition-all ${
+              isSidebarCollapsed 
+                ? `w-11 h-11 rounded-full mx-auto justify-center ${isActive ? 'bg-[#DFFF00] text-[rgb(38,47,44)] shadow-[0_0_12px_rgba(223,255,0,0.4)]' : 'hover:bg-white/5 text-[#E0E6ED]'}` 
+                : `gap-3 p-3 rounded-xl ${isActive ? 'bg-[#DFFF00] text-[rgb(38,47,44)]' : 'hover:bg-white/5 text-[#E0E6ED]'}`
+            }`}
+          >
+            <link.icon size={20} className="flex-shrink-0" />
+            <span className={`${isSidebarCollapsed ? 'hidden' : 'block'}`}>{link.label}</span>
+          </Link>
+        );
+      })}
       <div className="relative">
         {isLocked ? (
-            <button onClick={() => {setLockedModal(true); setSidebarOpen(false);}} className="flex w-full items-center justify-between gap-3 p-3 rounded-xl hover:bg-white/5 transition opacity-40 cursor-not-allowed">
-                <span className="flex items-center gap-3"><Briefcase size={20} /> <span className={`${isSidebarCollapsed ? 'hidden' : 'block'}`}>Job Pool</span></span>
+            <button 
+              onClick={() => {setLockedModal(true); setSidebarOpen(false);}} 
+              className={`flex items-center transition opacity-40 cursor-not-allowed ${
+                isSidebarCollapsed 
+                  ? 'w-11 h-11 rounded-full mx-auto justify-center hover:bg-white/5' 
+                  : 'w-full gap-3 p-3 rounded-xl justify-between hover:bg-white/5'
+              }`}
+            >
+                <span className="flex items-center gap-3">
+                  <Briefcase size={20} className="flex-shrink-0" /> 
+                  <span className={`${isSidebarCollapsed ? 'hidden' : 'block'}`}>Job Pool</span>
+                </span>
                 <Lock size={16} className={`${isSidebarCollapsed ? 'hidden' : 'block'}`} />
             </button>
         ) : (
-            <Link href="/dashboard/job-pool" onClick={() => setSidebarOpen(false)} className={`flex items-center gap-3 p-3 rounded-xl transition ${pathname === '/dashboard/job-pool' ? 'bg-[#DFFF00] text-[rgb(38,47,44)]' : 'hover:bg-white/5'}`}>
+            <Link 
+              href="/dashboard/job-pool" 
+              onClick={() => setSidebarOpen(false)} 
+              className={`flex items-center transition-all ${
+                pathname === '/dashboard/job-pool' 
+                  ? (isSidebarCollapsed ? 'bg-[#DFFF00] text-[rgb(38,47,44)] w-11 h-11 rounded-full mx-auto justify-center shadow-[0_0_12px_rgba(223,255,0,0.4)]' : 'bg-[#DFFF00] text-[rgb(38,47,44)] p-3 rounded-xl gap-3')
+                  : (isSidebarCollapsed ? 'hover:bg-white/5 w-11 h-11 rounded-full mx-auto justify-center' : 'hover:bg-white/5 p-3 rounded-xl gap-3')
+              }`}
+            >
                 <Briefcase size={20} className="flex-shrink-0" />
                 <span className={`${isSidebarCollapsed ? 'hidden' : 'block'}`}>Job Pool</span>
             </Link>

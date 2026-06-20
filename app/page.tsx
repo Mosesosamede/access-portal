@@ -1,11 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'motion/react';
-import { BookOpen, Sparkles, Key, LogIn, ChevronRight } from 'lucide-react';
+import { BookOpen, Sparkles, Key, LogIn, ChevronRight, Mail } from 'lucide-react';
 
 export default function HomePage() {
+  const [showSupportNote, setShowSupportNote] = useState(false);
   const containerVariants: any = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
@@ -90,9 +92,7 @@ export default function HomePage() {
           variants={itemVariants} 
           className="w-full flex flex-col gap-3 sm:gap-4"
         >
-          {/* 1. Onboarding Actions Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            {/* Purchase Handbook */}
             <Link 
               href="/sales" 
               className="group flex flex-col justify-between p-4 sm:p-5 bg-[#dbf0de] text-[#1a2321] rounded-xl sm:rounded-2xl font-bold transition duration-300 hover:shadow-[0_0_20px_rgba(219,240,222,0.3)] hover:-translate-y-0.5"
@@ -108,7 +108,6 @@ export default function HomePage() {
               </div>
             </Link>
 
-            {/* Redeem Access Code */}
             <Link 
               href="/access" 
               className="group flex flex-col justify-between p-4 sm:p-5 bg-[#dbf0de]/5 border border-[#dbf0de]/10 hover:border-[#dbf0de]/20 rounded-xl sm:rounded-2xl text-white transition duration-300 hover:bg-[#dbf0de]/10 hover:-translate-y-0.5"
@@ -125,7 +124,6 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* 2. Secondary Portal Link */}
           <Link 
             href="/login" 
             className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl bg-[#dbf0de]/5 border border-[#dbf0de]/10 hover:bg-[#1a2321] transition duration-300 group"
@@ -150,7 +148,27 @@ export default function HomePage() {
           Secured with Deloxe Professional Services &copy; {new Date().getFullYear()}
         </motion.p>
       </motion.div>
+
+      {/* Footer Support */}
+      <footer className="mt-auto pt-8 pb-4 relative z-10 w-full flex justify-center">
+        <div 
+          className="relative inline-block group"
+          onMouseEnter={() => setShowSupportNote(true)}
+          onMouseLeave={() => setShowSupportNote(false)}
+        >
+          <a href="mailto:support@deloxehr.com" className="flex items-center gap-2 text-[#dbf0de]/60 hover:text-[#DFFF00] transition-colors text-xs font-medium">
+            <Mail size={16} />
+            support@deloxehr.com
+          </a>
+          
+          {/* Note Popup */}
+          {showSupportNote && (
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 bg-[#dbf0de] text-[#1a2321] rounded-lg shadow-xl w-64 text-center text-xs font-semibold leading-relaxed animate-in fade-in zoom-in duration-200">
+              For any technical help or anything concerning the ecosystem, please contact us at support@deloxehr.com.
+            </div>
+          )}
+        </div>
+      </footer>
     </main>
   );
 }
-

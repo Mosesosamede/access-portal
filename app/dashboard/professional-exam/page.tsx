@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApplicant } from '@/components/ApplicantContext';
 import { getSupabase } from '@/lib/supabase';
@@ -76,7 +76,7 @@ export default function ProfessionalExamPage() {
   const QUESTIONS_PER_PAGE = 5;
 
   // Perform scoring & complete submission
-  const processFinalSubmission = async (subId: string, loadedQuestions: Question[]) => {
+  const processFinalSubmission = useCallback(async (subId: string, loadedQuestions: Question[]) => {
     try {
       setSubmitting(true);
 
@@ -157,12 +157,12 @@ export default function ProfessionalExamPage() {
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [applicant?.id, refreshApplicantData]);
 
   // Auto Submit when Timer hits 0
-  const handleAutoSubmit = (subId: string, loadedQuestions: Question[]) => {
+  const handleAutoSubmit = useCallback((subId: string, loadedQuestions: Question[]) => {
     processFinalSubmission(subId, loadedQuestions);
-  };
+  }, [processFinalSubmission]);
 
   // Manual Trigger Submit
   const handleManualSubmit = () => {
