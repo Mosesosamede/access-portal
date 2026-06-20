@@ -18,8 +18,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 size={48} className="animate-spin text-blue-600" />
+      <div className="min-h-screen bg-[#1a2321] flex items-center justify-center">
+        <Loader2 size={48} className="animate-spin text-[#DFFF00]" />
       </div>
     );
   }
@@ -48,15 +48,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 flex">
+    <div className="min-h-screen bg-[#1a2321] text-[#E0E6ED] flex">
       {/* Sidebar Overlay */}
       {sidebarOpen && <div className="fixed inset-0 bg-black/20 z-40 md:hidden" onClick={() => setSidebarOpen(false)}></div>}
 
       {/* Desktop Sidebar */}
-      <aside className={`hidden md:flex flex-col border-r border-gray-200 bg-white p-4 transition-all duration-300 ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
+      <aside className={`hidden md:flex flex-col border-r border-[#dbf0de]/10 bg-[#1a2321] p-4 transition-all duration-300 ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
         <div className="flex items-center justify-between mb-8 px-2">
-            <h2 className={`text-lg font-bold text-gray-900 ${isSidebarCollapsed ? 'hidden' : 'block'}`}>Deloxe</h2>
-            <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="text-gray-500 hover:text-gray-900 transition-colors">
+            <h2 className={`text-lg font-bold text-[#dbf0de] ${isSidebarCollapsed ? 'hidden' : 'block'}`}>Deloxe</h2>
+            <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="text-gray-400 hover:text-[#dbf0de] transition-colors">
               {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
             </button>
         </div>
@@ -66,17 +66,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-0">
         {/* Top Bar */}
-        <header className="border-b border-gray-200 bg-white/80 backdrop-blur-md p-4 flex justify-between items-center sticky top-0 z-30">
-          <h1 className="text-lg font-semibold text-gray-900">Deloxe</h1>
+        <header className="border-b border-[#dbf0de]/10 bg-[#1a2321]/80 backdrop-blur-md p-4 flex justify-between items-center sticky top-0 z-30">
+          <h1 className="text-lg font-semibold text-[#dbf0de]">Deloxe</h1>
           <div className="relative">
-            <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full hover:bg-gray-200 transition text-gray-800 text-sm font-medium">
+            <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 px-3 py-1.5 bg-[#dbf0de]/5 rounded-full hover:bg-[#dbf0de]/10 transition text-[#dbf0de] text-sm font-medium">
               <User size={16} />
               <span>{applicant?.full_name || 'Candidate'}</span>
             </button>
             {profileOpen && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg z-50 p-1">
-                <Link href="/dashboard/settings" className="block p-2 hover:bg-gray-100 rounded-lg text-gray-700 text-sm">Settings</Link>
-                <button onClick={handleLogout} className="w-full text-left p-2 text-red-600 hover:bg-red-50 rounded-lg text-sm flex items-center gap-2">
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute right-0 mt-2 w-48 bg-[#26312f] border border-[#dbf0de]/10 rounded-xl overflow-hidden shadow-lg z-50 p-1">
+                <Link href="/dashboard/settings" className="block p-2 hover:bg-[#dbf0de]/5 rounded-lg text-[#dbf0de] text-sm">Settings</Link>
+                <button onClick={handleLogout} className="w-full text-left p-2 text-red-400 hover:bg-white/5 rounded-lg text-sm flex items-center gap-2">
                   <LogOut size={16} /> Logout
                 </button>
               </motion.div>
@@ -90,14 +90,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
       
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 flex justify-between items-center z-40">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#1a2321] border-t border-[#dbf0de]/10 p-2 flex justify-between items-center z-40">
         {navItems.slice(0, 4).map(item => (
-            <Link key={item.href} href={item.href} className={`flex flex-col items-center gap-1 p-2 ${pathname === item.href ? 'text-blue-600' : 'text-gray-500'}`}>
+            <Link key={item.href} href={item.href} className={`flex flex-col items-center gap-1 p-2 ${pathname === item.href ? 'text-[#DFFF00]' : 'text-gray-400'}`}>
                 <item.icon size={22} />
                 <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
         ))}
-        <button onClick={() => setSidebarOpen(true)} className="flex flex-col items-center gap-1 p-2 text-gray-500">
+        <button onClick={() => setSidebarOpen(true)} className="flex flex-col items-center gap-1 p-2 text-gray-400">
             <MoreHorizontal size={22} />
             <span className="text-[10px] font-medium">Menu</span>
         </button>
@@ -106,7 +106,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Mobile Menu Drawer */}
       <AnimatePresence>
         {sidebarOpen && (
-          <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="md:hidden fixed inset-y-0 right-0 z-50 w-3/4 bg-white shadow-2xl p-6 border-l border-gray-200">
+          <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="md:hidden fixed inset-y-0 right-0 z-50 w-3/4 bg-[#1a2321] shadow-2xl p-6 border-l border-[#dbf0de]/10">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-lg font-bold">Menu</h2>
               <button onClick={() => setSidebarOpen(false)}><X /></button>
@@ -133,8 +133,8 @@ function NavLinks({ navItems, pathname, isCollapsed, isLocked, setLockedModal, i
               onClick={() => setLockedModal(true)}
               className={`flex items-center transition-all opacity-40 cursor-not-allowed ${
                 isCollapsed 
-                  ? 'w-12 h-12 rounded-full mx-auto justify-center text-gray-500 hover:bg-gray-100' 
-                  : 'gap-3 p-3 rounded-xl text-gray-600 hover:bg-gray-100'
+                  ? 'w-12 h-12 rounded-full mx-auto justify-center text-gray-400 hover:bg-[#dbf0de]/5' 
+                  : 'gap-3 p-3 rounded-xl text-[#E0E6ED] hover:bg-[#dbf0de]/5'
               }`}
             >
               <link.icon size={20} className="flex-shrink-0" />
@@ -150,8 +150,8 @@ function NavLinks({ navItems, pathname, isCollapsed, isLocked, setLockedModal, i
             href={link.href}
             className={`flex items-center transition-all ${
               isCollapsed 
-                ? `w-12 h-12 rounded-full mx-auto justify-center ${isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:bg-gray-100'}` 
-                : `gap-3 p-3 rounded-xl ${isActive ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`
+                ? `w-12 h-12 rounded-full mx-auto justify-center ${isActive ? 'bg-[#DFFF00] text-[rgb(38,47,44)]' : 'text-gray-400 hover:bg-[#dbf0de]/5'}` 
+                : `gap-3 p-3 rounded-xl ${isActive ? 'bg-[#DFFF00] text-[rgb(38,47,44)] font-semibold' : 'text-[#E0E6ED] hover:bg-[#dbf0de]/5'}`
             }`}
           >
             <link.icon size={20} className="flex-shrink-0" />
