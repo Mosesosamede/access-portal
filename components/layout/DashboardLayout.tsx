@@ -43,7 +43,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/handbook', label: 'Handbook', icon: BookOpen },
     { href: '/dashboard/training-hub', label: 'Training', icon: GraduationCap },
     { href: '/dashboard/professional-exam', label: 'Exam', icon: Award },
-    { href: '/dashboard/profile', label: 'Profile', icon: User },
     { href: '/dashboard/job-pool', label: 'Job Pool', icon: Briefcase, isLocked: isLocked },
   ];
 
@@ -60,7 +59,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
             </button>
         </div>
-        <NavLinks navItems={navItems} pathname={pathname} isCollapsed={isSidebarCollapsed} isLocked={isLocked} setLockedModal={setLockedModal} />
+        <div className="flex-1">
+          <NavLinks navItems={navItems} pathname={pathname} isCollapsed={isSidebarCollapsed} isLocked={isLocked} setLockedModal={setLockedModal} />
+        </div>
+        <button 
+            onClick={handleLogout} 
+            className={`flex items-center gap-3 p-3 rounded-xl text-red-400 hover:bg-white/5 transition-colors ${isSidebarCollapsed ? 'justify-center w-12 h-12 rounded-full' : 'w-full'}`}
+        >
+            <LogOut size={20} />
+            {!isSidebarCollapsed && <span>Logout</span>}
+        </button>
       </aside>
 
       {/* Main Content */}
@@ -68,19 +76,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Top Bar */}
         <header className="border-b border-[#dbf0de]/10 bg-[#1a2321]/80 backdrop-blur-md p-4 flex justify-between items-center sticky top-0 z-30">
           <h1 className="text-lg font-semibold text-[#dbf0de]">Deloxe</h1>
-          <div className="relative">
-            <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 px-3 py-1.5 bg-[#dbf0de]/5 rounded-full hover:bg-[#dbf0de]/10 transition text-[#dbf0de] text-sm font-medium">
-              <User size={16} />
-              <span>{applicant?.full_name || 'Candidate'}</span>
-            </button>
-            {profileOpen && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute right-0 mt-2 w-48 bg-[#26312f] border border-[#dbf0de]/10 rounded-xl overflow-hidden shadow-lg z-50 p-1">
-                <Link href="/dashboard/settings" className="block p-2 hover:bg-[#dbf0de]/5 rounded-lg text-[#dbf0de] text-sm">Settings</Link>
-                <button onClick={handleLogout} className="w-full text-left p-2 text-red-400 hover:bg-white/5 rounded-lg text-sm flex items-center gap-2">
-                  <LogOut size={16} /> Logout
-                </button>
-              </motion.div>
-            )}
+          <div className="hidden md:block">
+            <span className="text-[#dbf0de]/60 text-sm">{applicant?.full_name || 'Candidate'}</span>
           </div>
         </header>
 
@@ -90,9 +87,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
       
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#1a2321] border-t border-[#dbf0de]/10 p-2 flex justify-between items-center z-40">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#26312f] border-t border-[#dbf0de]/10 shadow-[0_-4px_20px_rgba(0,0,0,0.2)] rounded-t-2xl p-2 flex justify-around items-center z-40">
         {navItems.slice(0, 4).map(item => (
-            <Link key={item.href} href={item.href} className={`flex flex-col items-center gap-1 p-2 ${pathname === item.href ? 'text-[#DFFF00]' : 'text-gray-400'}`}>
+            <Link key={item.href} href={item.href} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${pathname === item.href ? 'text-[#DFFF00] bg-white/5' : 'text-gray-400'}`}>
                 <item.icon size={22} />
                 <span className="text-[10px] font-medium">{item.label}</span>
             </Link>

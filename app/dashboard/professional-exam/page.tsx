@@ -493,7 +493,7 @@ export default function ProfessionalExamPage() {
             {/* Stage Milestone Notification */}
             <div className="bg-[#1d2725] border border-green-500/20 p-6 rounded-2xl max-w-2xl mx-auto mt-8 flex flex-col md:flex-row items-center gap-4 text-left">
               <div className="w-12 h-12 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center flex-shrink-0 text-green-400">
-                <Sparkles />
+                <CheckCircle2 />
               </div>
               <div>
                 <h4 className="text-sm font-bold text-white mb-1">Interview Stage Officially Unlocked!</h4>
