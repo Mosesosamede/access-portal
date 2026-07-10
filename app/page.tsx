@@ -78,27 +78,62 @@ export default function HomePage() {
   }
 
   if (verificationError) {
+    const isPkceError = verificationError.toLowerCase().includes('pkce') || verificationError.toLowerCase().includes('verifier');
+
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#1a2321] text-[#dbf0de]">
-        <div className="bg-white/5 backdrop-blur-md rounded-3xl border border-red-500/30 p-12 max-w-md w-full shadow-2xl text-center space-y-6">
-          <div className="w-16 h-16 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center mx-auto text-red-400">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-            </svg>
+        <div className={`bg-white/5 backdrop-blur-md rounded-3xl border ${isPkceError ? 'border-[#dbf0de]/20 max-w-xl' : 'border-red-500/30 max-w-md'} p-8 sm:p-12 w-full shadow-2xl text-center space-y-6`}>
+          <div className={`w-16 h-16 ${isPkceError ? 'bg-[#dbf0de]/10 border border-[#dbf0de]/30 text-[#dbf0de]' : 'bg-red-500/10 border border-red-500/30 text-red-400'} rounded-full flex items-center justify-center mx-auto`}>
+            {isPkceError ? (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 animate-pulse">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              </svg>
+            )}
           </div>
-          <h2 className="text-xl font-bold text-red-200">Verification Failed</h2>
-          <p className="text-sm text-white/70 animate-pulse">
-            {verificationError}
-          </p>
-          <button
-            onClick={() => {
-              setVerificationError('');
-              router.push('/');
-            }}
-            className="w-full px-6 py-4 bg-[#dbf0de] text-[#1a2321] rounded-full font-bold hover:shadow-lg transition-all hover:scale-105"
-          >
-            Back to Home
-          </button>
+          <h2 className={`text-xl font-bold ${isPkceError ? 'text-[#dbf0de]' : 'text-red-200'}`}>
+            {isPkceError ? 'Environment Domain Mismatch' : 'Verification Failed'}
+          </h2>
+
+          {isPkceError ? (
+            <div className="text-left text-sm space-y-4 text-white/80 border-t border-b border-white/10 py-6">
+              <p className="font-semibold text-[#dbf0de]">Why did this happen?</p>
+              <p>
+                You requested the password reset from a <strong>development server</strong> (your AI Studio preview), but Supabase redirected you to the <strong>production domain</strong> (<code className="bg-black/30 px-1.5 py-0.5 rounded text-red-300 font-mono text-xs">ecosystem.deloxehr.com</code>).
+              </p>
+              <p>
+                Due to modern security standards (PKCE), the verification code can only be exchanged on the <strong>exact same domain</strong> where you initiated the request.
+              </p>
+              <p className="font-semibold text-[#dbf0de] mt-2">How to test and fix this:</p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>
+                  <strong>To test in production:</strong> Go directly to <a href="https://www.ecosystem.deloxehr.com/login" className="underline text-[#dbf0de] hover:text-white" target="_blank" rel="noopener noreferrer">ecosystem.deloxehr.com/login</a>, request the password reset link from there, and click the email link. It will work perfectly!
+                </li>
+                <li>
+                  <strong>To test in development:</strong> You must add your development URL to your Supabase Dashboard under <strong>Project Settings → Auth → URL Configuration → Redirect URLs</strong>.
+                </li>
+              </ul>
+            </div>
+          ) : (
+            <p className="text-sm text-white/70 animate-pulse">
+              {verificationError}
+            </p>
+          )}
+
+          <div className="flex gap-4">
+            <button
+              onClick={() => {
+                setVerificationError('');
+                router.push('/login');
+              }}
+              className="flex-1 px-6 py-4 bg-[#dbf0de] text-[#1a2321] rounded-full font-bold hover:shadow-lg transition-all hover:scale-105"
+            >
+              Go to Login Page
+            </button>
+          </div>
         </div>
       </main>
     );

@@ -109,9 +109,32 @@ export default function ResetPasswordPage() {
                 {error}
               </div>
             )}
-            <p className="text-white/70 text-sm">
-              Your recovery link may have expired or is invalid. Please request a new link from the login page.
-            </p>
+            
+            {error.toLowerCase().includes('pkce') || error.toLowerCase().includes('verifier') ? (
+              <div className="text-left text-xs space-y-3 text-white/80 border-t border-b border-white/10 py-4 my-2">
+                <p className="font-semibold text-[#dbf0de] text-sm">Why did this happen?</p>
+                <p>
+                  You requested the password reset from a <strong>development server</strong> (AI Studio preview), but Supabase redirected you to the <strong>production domain</strong> (<code className="bg-black/30 px-1 py-0.5 rounded text-red-300 font-mono">ecosystem.deloxehr.com</code>).
+                </p>
+                <p>
+                  Due to modern security standards (PKCE), verification codes cannot be exchanged across different domains.
+                </p>
+                <p className="font-semibold text-[#dbf0de] mt-1">How to test and fix this:</p>
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>
+                    <strong>Production:</strong> Go to <a href="https://www.ecosystem.deloxehr.com/login" className="underline text-[#dbf0de]" target="_blank" rel="noopener noreferrer">ecosystem.deloxehr.com/login</a>, request the link there, and click it. It will work perfectly!
+                  </li>
+                  <li>
+                    <strong>Development:</strong> Add your development preview URL to your Supabase Dashboard under <strong>Project Settings → Auth → URL Configuration → Redirect URLs</strong>.
+                  </li>
+                </ul>
+              </div>
+            ) : (
+              <p className="text-white/70 text-sm">
+                Your recovery link may have expired or is invalid. Please request a new link from the login page.
+              </p>
+            )}
+
             <button 
               onClick={() => router.push('/login')}
               className="w-full px-6 py-4 bg-[#dbf0de] text-[#1a2321] rounded-full font-bold hover:shadow-lg transition-all hover:scale-105"
