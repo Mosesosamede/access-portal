@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -11,7 +11,56 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  
+  // Verification & Session check states
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [hasValidSession, setHasValidSession] = useState(false);
+
   const router = useRouter();
+
+  useEffect(() => {
+    const handleAuthCheckAndExchange = async () => {
+      if (typeof window === 'undefined') return;
+      
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const supabase = getSupabase();
+
+      try {
+        if (code) {
+          // If there is an auth code, exchange it for a session
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) {
+            setError(error.message);
+            setHasValidSession(false);
+          } else if (data?.session) {
+            setHasValidSession(true);
+            // Clean up the URL query params so they don't stay in the browser address bar
+            window.history.replaceState({}, document.title, window.location.pathname);
+          } else {
+            setError('Could not verify your reset link. Please try again.');
+            setHasValidSession(false);
+          }
+        } else {
+          // No code in URL, check if there is an active session
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            setHasValidSession(true);
+          } else {
+            setError('No active session or password reset token found. Please request a new password reset link.');
+            setHasValidSession(false);
+          }
+        }
+      } catch (err) {
+        setError('An unexpected error occurred during session verification.');
+        setHasValidSession(false);
+      } finally {
+        setIsVerifying(false);
+      }
+    };
+
+    handleAuthCheckAndExchange();
+  }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,58 +96,85 @@ export default function ResetPasswordPage() {
     <main className="min-h-screen flex items-center justify-center p-6 bg-[#1a2321]">
       <div className="bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 p-12 max-w-md w-full shadow-2xl">
         <h1 className="text-3xl font-bold text-[#dbf0de] mb-6 text-center">New Password</h1>
-        <p className="text-white text-center mb-8">Enter your new secure password below.</p>
-
-        {error && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 text-sm text-center">
-            {error}
+        
+        {isVerifying ? (
+          <div className="text-center py-8 space-y-4">
+            <Loader2 className="animate-spin text-[#dbf0de] mx-auto" size={40} />
+            <p className="text-white text-sm">Verifying your security token...</p>
           </div>
-        )}
-
-        {message && (
-          <div className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-xl text-green-200 text-sm text-center">
-            {message}
-          </div>
-        )}
-
-        {!message && (
-          <form onSubmit={handleResetPassword} className="space-y-4">
-            <div className="relative">
-              <input 
-                type={showPassword ? 'text' : 'password'} 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                placeholder="New Password" 
-                className="w-full bg-[#1a2321]/50 p-4 pr-12 rounded-xl border border-white/10 text-white focus:border-[#dbf0de] transition-all outline-none" 
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-
-            <input 
-              type={showPassword ? 'text' : 'password'} 
-              value={confirmPassword} 
-              onChange={(e) => setConfirmPassword(e.target.value)} 
-              placeholder="Confirm New Password" 
-              className="w-full bg-[#1a2321]/50 p-4 rounded-xl border border-white/10 text-white focus:border-[#dbf0de] transition-all outline-none" 
-              required
-            />
-
+        ) : !hasValidSession ? (
+          <div className="text-center space-y-6 py-4">
+            {error && (
+              <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 text-sm">
+                {error}
+              </div>
+            )}
+            <p className="text-white/70 text-sm">
+              Your recovery link may have expired or is invalid. Please request a new link from the login page.
+            </p>
             <button 
-              type="submit" 
-              disabled={loading} 
-              className="w-full px-6 py-4 bg-[#dbf0de] text-[#1a2321] rounded-full font-bold hover:shadow-lg transition-all hover:scale-105 flex justify-center items-center gap-2"
+              onClick={() => router.push('/login')}
+              className="w-full px-6 py-4 bg-[#dbf0de] text-[#1a2321] rounded-full font-bold hover:shadow-lg transition-all hover:scale-105"
             >
-              {loading && <Loader2 size={18} className="animate-spin" />}
-              {loading ? 'Updating password...' : 'Update Password'}
+              Back to Sign In
             </button>
-          </form>
+          </div>
+        ) : (
+          <>
+            <p className="text-white text-center mb-8">Enter your new secure password below.</p>
+
+            {error && (
+              <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 text-sm text-center">
+                {error}
+              </div>
+            )}
+
+            {message && (
+              <div className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-xl text-green-200 text-sm text-center">
+                {message}
+              </div>
+            )}
+
+            {!message && (
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div className="relative">
+                  <input 
+                    type={showPassword ? 'text' : 'password'} 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    placeholder="New Password" 
+                    className="w-full bg-[#1a2321]/50 p-4 pr-12 rounded-xl border border-white/10 text-white focus:border-[#dbf0de] transition-all outline-none" 
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  value={confirmPassword} 
+                  onChange={(e) => setConfirmPassword(e.target.value)} 
+                  placeholder="Confirm New Password" 
+                  className="w-full bg-[#1a2321]/50 p-4 rounded-xl border border-white/10 text-white focus:border-[#dbf0de] transition-all outline-none" 
+                  required
+                />
+
+                <button 
+                  type="submit" 
+                  disabled={loading} 
+                  className="w-full px-6 py-4 bg-[#dbf0de] text-[#1a2321] rounded-full font-bold hover:shadow-lg transition-all hover:scale-105 flex justify-center items-center gap-2"
+                >
+                  {loading && <Loader2 size={18} className="animate-spin" />}
+                  {loading ? 'Updating password...' : 'Update Password'}
+                </button>
+              </form>
+            )}
+          </>
         )}
       </div>
     </main>

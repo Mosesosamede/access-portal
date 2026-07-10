@@ -1,13 +1,50 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { getSupabase } from '@/lib/supabase';
 import { motion } from 'motion/react';
-import { BookOpen, Sparkles, Key, LogIn, ChevronRight, Mail } from 'lucide-react';
+import { BookOpen, Sparkles, Key, LogIn, ChevronRight, Mail, Loader2 } from 'lucide-react';
 
 export default function HomePage() {
   const [showSupportNote, setShowSupportNote] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationError, setVerificationError] = useState('');
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleAuthCode = async () => {
+      if (typeof window === 'undefined') return;
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      
+      if (code) {
+        setIsVerifying(true);
+        setVerificationError('');
+        try {
+          const supabase = getSupabase();
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) {
+            setVerificationError(error.message);
+          } else if (data?.session) {
+            // Successfully exchanged code! Let's redirect to reset password
+            router.push('/reset-password');
+          } else {
+            setVerificationError('Could not verify your reset link. Please try again.');
+          }
+        } catch (err) {
+          setVerificationError('An unexpected error occurred during verification.');
+        } finally {
+          setIsVerifying(false);
+        }
+      }
+    };
+
+    handleAuthCode();
+  }, [router]);
+
   const containerVariants: any = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
@@ -25,6 +62,47 @@ export default function HomePage() {
     hidden: { opacity: 0, y: 15 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
   };
+
+  if (isVerifying) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#1a2321] text-[#dbf0de]">
+        <div className="bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 p-12 max-w-md w-full shadow-2xl text-center space-y-6">
+          <Loader2 className="animate-spin text-[#dbf0de] mx-auto" size={48} />
+          <h2 className="text-xl font-bold">Verifying Reset Link</h2>
+          <p className="text-sm text-white/70">
+            Securing your connection and preparing the reset portal. Please wait...
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (verificationError) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#1a2321] text-[#dbf0de]">
+        <div className="bg-white/5 backdrop-blur-md rounded-3xl border border-red-500/30 p-12 max-w-md w-full shadow-2xl text-center space-y-6">
+          <div className="w-16 h-16 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center mx-auto text-red-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-red-200">Verification Failed</h2>
+          <p className="text-sm text-white/70 animate-pulse">
+            {verificationError}
+          </p>
+          <button
+            onClick={() => {
+              setVerificationError('');
+              router.push('/');
+            }}
+            className="w-full px-6 py-4 bg-[#dbf0de] text-[#1a2321] rounded-full font-bold hover:shadow-lg transition-all hover:scale-105"
+          >
+            Back to Home
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 bg-[#1a2321] text-[#dbf0de] relative overflow-hidden py-10 sm:py-16 md:py-20">
