@@ -60,10 +60,8 @@ export function CertificateViewer({ pdfUrl, certificateId }: CertificateViewerPr
           </a>
           <span>|</span>
           <a
-            href={pdfUrl}
+            href={`/api/certificates/download?id=${certificateId}`}
             download={`${certificateId}.pdf`}
-            target="_blank"
-            rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-gray-300 hover:text-[#dbf0de] transition-colors"
           >
             <Download size={13} /> Direct Download

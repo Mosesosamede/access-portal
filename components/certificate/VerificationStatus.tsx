@@ -169,9 +169,8 @@ export function VerificationStatus({ status, certificate, searchedId }: Verifica
         {certificate.pdf_url && (
           <div className="pt-2">
             <a
-              href={certificate.pdf_url}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={`/api/certificates/download?id=${certificate.certificate_id}`}
+              download={`${certificate.certificate_id}.pdf`}
               className="w-full py-3.5 bg-[#dbf0de] hover:bg-[#cbe2ce] text-[#1a2321] rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition duration-200"
             >
               <Download size={16} /> Download Certificate (PDF)

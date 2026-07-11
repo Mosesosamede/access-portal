@@ -77,12 +77,10 @@ export function CertificateCard({
             <ExternalLink size={14} /> View Certificate
           </a>
 
-          {/* Download certificate links directly to public storage URL */}
+          {/* Download certificate links directly to our secure proxy downloader */}
           <a
-            href={pdfUrl}
+            href={`/api/certificates/download?id=${certificateId}`}
             download={`${certificateId}.pdf`}
-            target="_blank"
-            rel="noopener noreferrer"
             className="px-5 py-3 bg-[#dbf0de] hover:bg-[#cbe2ce] text-[#1a2321] rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-[0_4px_12px_rgba(219,240,222,0.15)] hover:shadow-[0_4px_20px_rgba(219,240,222,0.25)] active:scale-[0.98]"
           >
             <Download size={14} /> Download Certificate
