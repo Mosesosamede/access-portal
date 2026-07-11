@@ -1,10 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-function getServiceSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-project.supabase.co";
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "sb_secret_buLvfwp0kO0LwZfszswvPQ_74pQEK0I";
-  return createClient(url, serviceKey);
-}
+import { getServiceSupabase } from '@/lib/supabase';
 
 /**
  * Generates a unique Certificate ID like DELX-2026-000001

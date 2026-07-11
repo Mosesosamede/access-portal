@@ -1,15 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getServiceSupabase } from '@/lib/supabase';
 import { generateCertificateId } from '@/lib/certificate/generateCertificateId';
 import { generateCertificate } from '@/lib/certificate/generateCertificate';
 import { uploadCertificate } from '@/lib/certificate/uploadCertificate';
 import { certificateConfig } from '@/lib/certificate/certificateconfig';
-
-function getServiceSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-project.supabase.co";
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "sb_secret_buLvfwp0kO0LwZfszswvPQ_74pQEK0I";
-  return createClient(url, serviceKey);
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -57,14 +51,15 @@ export async function POST(req: NextRequest) {
       .from('professional_exam_submissions')
       .select('*')
       .eq('applicant_id', applicantId)
-      .eq('passed', true)
       .maybeSingle();
 
     if (examErr) {
       console.error('Error fetching exam submission:', examErr);
     }
 
-    if (!examSubmission) {
+    const hasPassedExam = examSubmission && (examSubmission.passed || (examSubmission.percentage && examSubmission.percentage >= 75));
+
+    if (!hasPassedExam) {
       return NextResponse.json({
         error: 'Assessment not passed: Student has not passed the final Professional Certification Exam yet.'
       }, { status: 400 });

@@ -179,7 +179,7 @@ export default function ProfessionalExamPage() {
 
   // Certificate Auto-Generation & Loading Hook
   useEffect(() => {
-    if (!applicant || !submission || !submission.submitted_at || !submission.passed) return;
+    if (!applicant || !submission || !submission.submitted_at || !(submission.passed || submission.percentage >= 75)) return;
 
     const autoGenerateAndLoadCertificate = async () => {
       try {
@@ -205,7 +205,7 @@ export default function ProfessionalExamPage() {
     };
 
     autoGenerateAndLoadCertificate();
-  }, [applicant?.id, submission?.submitted_at, submission?.passed]);
+  }, [applicant?.id, submission?.submitted_at, submission?.passed, submission?.percentage]);
 
   // 1. Initial Load: Questions and Submissions
   useEffect(() => {
@@ -541,7 +541,7 @@ export default function ProfessionalExamPage() {
             </div>
 
             {/* Certificate Section */}
-            {submission.passed ? (
+            {(submission.passed || submission.percentage >= 75) ? (
               <div className="max-w-2xl mx-auto mt-8 text-left space-y-6">
                 <div className="border-t border-white/5 pt-6">
                   <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">

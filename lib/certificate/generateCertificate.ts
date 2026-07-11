@@ -1,13 +1,7 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { certificateConfig } from './certificateconfig';
 import { generateQRCode } from './generateQRCode';
-import { createClient } from '@supabase/supabase-js';
-
-function getServiceSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-project.supabase.co";
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "sb_secret_buLvfwp0kO0LwZfszswvPQ_74pQEK0I";
-  return createClient(url, serviceKey);
-}
+import { getServiceSupabase } from '@/lib/supabase';
 
 interface GenerateCertificateParams {
   studentName: string;
