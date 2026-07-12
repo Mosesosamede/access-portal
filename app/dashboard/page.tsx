@@ -4,17 +4,32 @@ import { useApplicant } from '@/components/ApplicantContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import SiteMapTour from '@/components/layout/SiteMapTour';
 import { getSupabase } from '@/lib/supabase';
-import { BookOpen, Lock, Unlock, Award, Check, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
-import { Loader2 } from 'lucide-react';
-import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts';
+import { 
+  BookOpen, Lock, Unlock, Award, Check, Sparkles, CheckCircle2, 
+  ArrowRight, Loader2, User as UserIcon, Briefcase, Calendar, 
+  CheckCircle, ChevronRight, Play, FileText, Send, UserCheck
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import confetti from 'canvas-confetti';
+import Image from 'next/image';
 
 export default function DashboardPage() {
-  const { applicant, isLoading } = useApplicant();
+  const { applicant, quizSubmissions, modules, isLoading, refreshApplicantData } = useApplicant();
   const router = useRouter();
 
   const [examSubmission, setExamSubmission] = useState<{ score: number, percentage: number } | null>(null);
   const [loadingExam, setLoadingExam] = useState(false);
+  
+  // Certificate state
+  const [certificate, setCertificate] = useState<any | null>(null);
+  const [loadingCertificate, setLoadingCertificate] = useState(false);
+
+  // Interview state
+  const [interviewFormOpen, setInterviewFormOpen] = useState(false);
+  const [careerGoals, setCareerGoals] = useState('');
+  const [problemSolving, setProblemSolving] = useState('');
+  const [submittingInterview, setSubmittingInterview] = useState(false);
+  const [interviewSuccess, setInterviewSuccess] = useState(false);
 
   useEffect(() => {
     if (!applicant) return;
@@ -45,190 +60,609 @@ export default function DashboardPage() {
     fetchExamScore();
   }, [applicant]);
 
+  // Load Certificate if stageInt >= 5 (implies final exam submitted)
+  const stageInt = applicant ? (parseInt(applicant.current_stage) || 1) : 1;
+  
+  useEffect(() => {
+    if (!applicant || stageInt < 5) return;
+    
+    const fetchCertificate = async () => {
+      try {
+        setLoadingCertificate(true);
+        const res = await fetch('/api/certificates/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ applicantId: applicant.id }),
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setCertificate(data.certificate);
+        }
+      } catch (err) {
+        console.error('Error fetching certificate:', err);
+      } finally {
+        setLoadingCertificate(false);
+      }
+    };
+    
+    fetchCertificate();
+  }, [applicant, stageInt]);
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center h-full min-h-[400px]">
         <Loader2 size={48} className="animate-spin text-[#DFFF00]" />
       </div>
     );
   }
 
   if (!applicant) {
-    return <div className="text-red-400">Error loading applicant data.</div>;
+    return <div className="text-red-400 p-8 text-center">Error loading applicant data.</div>;
   }
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
 
-  const STAGES = [
-    'Profile Creation', 'Dashboard Access', 'Training', 'Final Exam', 'Interview', 
-    'Job Pool Access', 'Engaged', 'Onboarding', '3-Month Review', '6-Month Review', 
-    'Final Review', 'Testimonial', 'Completion'
-  ];
+  // Calculate progress based on sequential journey
+  const completedQuizzesCount = Array.from(new Set(quizSubmissions.map(sub => sub.module_number))).length;
+  const totalModulesCount = modules.length || 5;
 
-  const stageInt = parseInt(applicant.current_stage) || 1;
-  const isJobPoolLocked = applicant.progress_percent < 100 || stageInt <= 5;
-  const progressData = [{ name: 'Progress', value: applicant.progress_percent, fill: '#DFFF00' }];
+  const getJourneyProgress = () => {
+    if (stageInt >= 6) return 100;
+    if (stageInt === 5) return 80;
+    if (stageInt === 4) return 60;
+    
+    // Stage 3 is Internship Readiness Training.
+    // Base before Stage 3 starts is 40% (Stage 1 & Stage 2 are complete)
+    const trainingProgress = (completedQuizzesCount / totalModulesCount) * 20;
+    return Math.round(40 + trainingProgress);
+  };
+
+  const journeyPercent = getJourneyProgress();
+
+  const handleInterviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!careerGoals.trim() || !problemSolving.trim()) return;
+
+    try {
+      setSubmittingInterview(true);
+      const supabase = getSupabase();
+
+      // Update current_stage to '6' (Job Pool Access)
+      const { error } = await supabase
+        .from('applicants')
+        .update({ 
+          current_stage: '6',
+          competitive_edge: `Career Motivation: ${careerGoals}\nProblem Solving Roadblock: ${problemSolving}`
+        })
+        .eq('id', applicant.id);
+
+      if (error) throw error;
+
+      confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+      setInterviewSuccess(true);
+      setInterviewFormOpen(false);
+      await refreshApplicantData();
+    } catch (err) {
+      console.error('Error submitting interview simulation:', err);
+      alert('Failed to submit interview answers. Please try again.');
+    } finally {
+      setSubmittingInterview(false);
+    }
+  };
 
   return (
     <DashboardLayout>
       <SiteMapTour />
-      <header className="mb-10">
-        <h2 className="text-3xl md:text-4xl font-bold text-[#DFFF00]">{greeting}, {applicant.full_name}</h2>
-        <p className="text-gray-400 mt-2">Track your progress and access your training materials.</p>
-      </header>
       
-      {/* 13-Stage Progression Engine */}
-      <div className="bg-[rgb(50,60,55)] p-6 md:p-8 rounded-3xl border border-white/10 shadow-lg mb-8">
-        <h3 className="text-xl font-bold mb-6">Your Journey</h3>
-        <div className="flex items-center gap-4 overflow-x-auto pb-4">
-            {STAGES.map((stage, index) => {
-                const stageNumber = index + 1;
-                const activeStageInt = parseInt(applicant.current_stage) || 1;
-                const isActive = stageNumber === activeStageInt;
-                const isCompleted = stageNumber < activeStageInt;
-                return (
-                    <div key={stage} className={`flex flex-col items-center gap-2 flex-shrink-0 w-24 ${isActive ? 'text-[#DFFF00]' : isCompleted ? 'text-green-400' : 'text-gray-500'}`}>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${isActive ? 'border-[#DFFF00]' : isCompleted ? 'border-green-400' : 'border-gray-500'}`}>
-                            {stageNumber}
-                        </div>
-                        <span className="text-[10px] text-center font-medium leading-tight">{stage}</span>
-                    </div>
-                );
-            })}
+      {/* Premium Header Bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-6 border-b border-white/5" id="dashboard-header-bar">
+        <div className="flex items-center gap-4">
+          <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[#DFFF00]/30 shadow-lg bg-[#26312f] flex items-center justify-center">
+            {applicant.passport_photo_url ? (
+              <Image 
+                src={applicant.passport_photo_url} 
+                alt={applicant.full_name} 
+                fill 
+                className="object-cover"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <span className="text-xl font-bold text-[#dbf0de]">
+                {applicant.full_name?.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase() || <UserIcon size={24} />}
+              </span>
+            )}
+          </div>
+          <div>
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
+              {greeting}, <span className="text-[#DFFF00]">{applicant.full_name}</span>
+            </h2>
+            <p className="text-xs text-gray-400 mt-1 flex items-center gap-1.5">
+              <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              Student ID: DELX-2026-{applicant.id.substring(0, 4).toUpperCase()} &bull; {applicant.status_tag}
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <div className="px-4 py-2 rounded-xl bg-[#26312f] border border-white/5 text-right hidden sm:block">
+            <span className="text-[10px] text-gray-400 block uppercase font-bold tracking-wider">Journey Status</span>
+            <span className="text-xs text-[#dbf0de] font-semibold">{stageInt >= 6 ? 'Job-Ready Candidate' : 'Preparation Phase'}</span>
+          </div>
         </div>
       </div>
 
-      {/* FINAL EXAM MILESTONE ALERT - STAGE 4 CARD */}
-      {stageInt === 4 && (
-        <div className="bg-gradient-to-r from-[#212c29] to-[#2a3834] border border-[#DFFF00]/30 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl mb-8 relative overflow-hidden" id="dashboard-exam-callout">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#DFFF00]/5 blur-2xl rounded-full"></div>
-          <div className="flex items-start gap-4 text-left">
-            <div className="w-12 h-12 rounded-2xl bg-[#DFFF00]/10 border border-[#DFFF00]/20 flex items-center justify-center flex-shrink-0 text-[#DFFF00]">
-              <Award className="w-6 h-6 animate-pulse" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-1.5">
-                Professional Certification Exam Unlocked! <Sparkles className="w-4 h-4 text-[#DFFF00]" />
-              </h3>
-              <p className="text-xs text-gray-400 mt-1.5 leading-relaxed max-w-xl">
-                Your training modules are 100% complete! You are fully authorized to sit for the final <strong>75-minute assessment</strong> to unlock the next stages. Answers are autosaved instantly to the database.
+      {/* Bento Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* LEFT COLUMN: Journey Stats & Progress (4 cols) */}
+        <div className="lg:col-span-4 space-y-6">
+          
+          {/* Progress Card inspired by "Your progress 72%" */}
+          <div className="bg-[#26312f] rounded-[32px] p-8 border border-white/5 shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[300px]">
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#DFFF00]/5 blur-3xl rounded-full"></div>
+            
+            <div className="space-y-4">
+              <span className="text-xs font-bold text-[#dbf0de]/60 uppercase tracking-widest block">Your Journey Progress</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-6xl font-black text-white tracking-tight">{journeyPercent}%</span>
+                <span className="text-xs text-[#DFFF00] font-black">COMPLETE</span>
+              </div>
+              <p className="text-xs text-gray-400 leading-relaxed max-w-[280px]">
+                Of your professional internship preparation roadmap has been successfully completed. Unlock subsequent stages to qualify for corporate matching.
               </p>
             </div>
+
+            <div className="space-y-4 mt-8 pt-6 border-t border-white/5">
+              {/* Custom Thin Glowing Progress Bar */}
+              <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden relative">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#DFFF00]/70 to-[#DFFF00] rounded-full transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(223,255,0,0.4)]"
+                  style={{ width: `${journeyPercent}%` }}
+                ></div>
+              </div>
+              
+              <div className="flex items-center justify-between text-[11px] font-bold text-gray-400">
+                <span>Stage {Math.min(5, Math.floor(journeyPercent / 20) + 1)}/5 Active</span>
+                <span className="text-[#DFFF00]">
+                  {stageInt >= 6 ? 'All stages completed!' : 'Keep advancing!'}
+                </span>
+              </div>
+            </div>
           </div>
-          <button
-            onClick={() => router.push('/dashboard/professional-exam')}
-            className="w-full md:w-auto px-6 py-3.5 bg-[#DFFF00] text-[#1a2321] rounded-xl font-black text-xs hover:brightness-110 shadow-[0_0_15px_rgba(223,255,0,0.25)] transition-all flex items-center justify-center gap-2 flex-shrink-0"
-          >
-            Start Certification Exam <ArrowRight size={14} />
-          </button>
-        </div>
-      )}
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Progress Card */}
-        <div className="bg-[rgb(50,60,55)] p-6 md:p-8 rounded-3xl border border-white/10 shadow-lg flex flex-col md:flex-row items-center gap-6 justify-center md:col-span-1">
-            <div className="w-28 h-28 flex-shrink-0 relative flex items-center justify-center">
-                <div className="absolute inset-0">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <RadialBarChart cx="50%" cy="50%" innerRadius="70%" outerRadius="100%" barSize={10} data={progressData} startAngle={90} endAngle={-270}>
-                            <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-                            <RadialBar background={{ fill: 'rgba(255,255,255,0.05)' }} dataKey="value" cornerRadius={10} />
-                        </RadialBarChart>
-                    </ResponsiveContainer>
+
+          {/* Context Info Card */}
+          <div className="bg-[#1e2624] rounded-[24px] p-6 border border-[#dbf0de]/5 space-y-4">
+            <h4 className="text-xs font-black uppercase text-[#dbf0de] tracking-wider flex items-center gap-2">
+              <Calendar size={14} className="text-[#DFFF00]" /> Next Up in your journey
+            </h4>
+            <div className="text-xs space-y-3">
+              {stageInt < 4 && (
+                <div className="p-3.5 bg-white/5 rounded-xl border border-white/5">
+                  <span className="font-bold text-[#DFFF00] block mb-1">Complete Training Hub Quizzes</span>
+                  <p className="text-gray-400 leading-normal text-[11px]">
+                    You have finished <strong className="text-white">{completedQuizzesCount}/{totalModulesCount}</strong> quizzes. Complete all remaining modules to unlock the Final Certification Exam.
+                  </p>
                 </div>
-                <div className="z-10 flex flex-col items-center justify-center">
-                    {applicant.progress_percent === 100 ? (
-                        <div className="relative" id="medal-complete-wrapper">
-                            <Award className="w-10 h-10 text-[#DFFF00] filter drop-shadow-[0_0_12px_rgba(223,255,0,0.6)] animate-pulse" id="complete-medal-icon" />
-                            <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-0.5 border border-[#212c29]" id="complete-check-badge">
-                                <Check className="w-3 h-3 text-white stroke-[3px]" />
+              )}
+              {stageInt === 4 && (
+                <div className="p-3.5 bg-[#DFFF00]/5 rounded-xl border border-[#DFFF00]/20">
+                  <span className="font-bold text-[#DFFF00] block mb-1">Take your Professional Exam</span>
+                  <p className="text-gray-400 leading-normal text-[11px]">
+                    This is your 75-question final assessment. There is no minimum score requirement; your certificate will be generated automatically upon submission.
+                  </p>
+                </div>
+              )}
+              {stageInt === 5 && (
+                <div className="p-3.5 bg-[#DFFF00]/5 rounded-xl border border-[#DFFF00]/20">
+                  <span className="font-bold text-[#DFFF00] block mb-1">Complete the Interview Stage</span>
+                  <p className="text-gray-400 leading-normal text-[11px]">
+                    Simulate your placement interview directly inside the Stage 5 roadmap card below to instantly unlock the Deloxe Job Pool!
+                  </p>
+                </div>
+              )}
+              {stageInt >= 6 && (
+                <div className="p-3.5 bg-green-500/5 rounded-xl border border-green-500/20">
+                  <span className="font-bold text-green-400 block mb-1">Job Pool Access is Unlocked!</span>
+                  <p className="text-gray-400 leading-normal text-[11px]">
+                    Congratulations! All preparation phases are completed. Explore direct corporate placements in the Job Pool.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+        </div>
+
+        {/* RIGHT COLUMN: Interactive 5-Stage Journey Roadmap (8 cols) */}
+        <div className="lg:col-span-8">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-[#dbf0de] tracking-tight flex items-center gap-2">
+                <span className="w-1.5 h-6 bg-[#DFFF00] rounded-full inline-block"></span>
+                Sequential Placement Journey
+              </h3>
+              <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">5 Stages</span>
+            </div>
+
+            {/* Stage 1: Profile Creation */}
+            <div className="relative pl-8 md:pl-12 pb-8 border-l border-white/5 last:border-l-0">
+              {/* Connector Node */}
+              <div className="absolute left-0 top-1.5 -translate-x-1/2 w-6 h-6 rounded-full bg-green-500 border-4 border-[#1a2321] flex items-center justify-center text-white text-[10px] font-black shadow-[0_0_12px_rgba(34,197,94,0.3)] z-10">
+                <Check size={10} className="stroke-[3px]" />
+              </div>
+              
+              <div className="bg-[#26312f] rounded-[24px] p-6 border border-white/5 shadow-md flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
+                <div className="space-y-1 text-left">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Stage 01</span>
+                    <h4 className="text-base font-bold text-white">Profile Creation</h4>
+                    <span className="px-2 py-0.5 bg-green-500/10 text-green-400 border border-green-500/25 rounded-full text-[9px] font-bold uppercase tracking-wider">Completed</span>
+                  </div>
+                  <p className="text-xs text-gray-400 max-w-lg leading-relaxed">
+                    First step completed. Your academic documents, resume, and career focus details are fully uploaded and reviewed.
+                  </p>
+                </div>
+                <button 
+                  onClick={() => router.push('/dashboard/profile')}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-[#dbf0de] border border-white/5 transition-all flex items-center gap-1 shrink-0"
+                >
+                  View Profile <ArrowRight size={12} />
+                </button>
+              </div>
+            </div>
+
+            {/* Stage 2: Dashboard Access */}
+            <div className="relative pl-8 md:pl-12 pb-8 border-l border-white/5 last:border-l-0">
+              {/* Connector Node */}
+              <div className="absolute left-0 top-1.5 -translate-x-1/2 w-6 h-6 rounded-full bg-green-500 border-4 border-[#1a2321] flex items-center justify-center text-white text-[10px] font-black shadow-[0_0_12px_rgba(34,197,94,0.3)] z-10">
+                <Check size={10} className="stroke-[3px]" />
+              </div>
+              
+              <div className="bg-[#26312f] rounded-[24px] p-6 border border-white/5 shadow-md flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
+                <div className="space-y-1 text-left">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Stage 02</span>
+                    <h4 className="text-base font-bold text-white">Dashboard Access</h4>
+                    <span className="px-2 py-0.5 bg-green-500/10 text-green-400 border border-green-500/25 rounded-full text-[9px] font-bold uppercase tracking-wider">Granted</span>
+                  </div>
+                  <p className="text-xs text-gray-400 max-w-lg leading-relaxed">
+                    Access to the overall internship readiness suite is active. Welcome messages, timeline logs, and roadmap progress tracking unlocked.
+                  </p>
+                </div>
+                <span className="text-xs font-bold text-gray-500 mr-2 shrink-0 flex items-center gap-1.5">
+                  <UserCheck size={14} className="text-green-400" /> Authorized
+                </span>
+              </div>
+            </div>
+
+            {/* Stage 3: Internship Readiness Training */}
+            {(() => {
+              const isActive = stageInt < 4;
+              const isCompleted = stageInt >= 4;
+              return (
+                <div className="relative pl-8 md:pl-12 pb-8 border-l border-white/5 last:border-l-0">
+                  {/* Connector Node */}
+                  <div className={`absolute left-0 top-1.5 -translate-x-1/2 w-6 h-6 rounded-full border-4 border-[#1a2321] flex items-center justify-center text-[10px] font-black shadow-lg z-10 ${
+                    isCompleted ? 'bg-green-500 text-white shadow-[0_0_12px_rgba(34,197,94,0.3)]' : 
+                    isActive ? 'bg-[#DFFF00] text-[#1a2321] animate-pulse shadow-[0_0_12px_rgba(223,255,0,0.3)]' : 'bg-gray-700 text-gray-400'
+                  }`}>
+                    {isCompleted ? <Check size={10} className="stroke-[3px]" /> : '03'}
+                  </div>
+                  
+                  <div className={`bg-[#26312f] rounded-[24px] p-6 border shadow-md transition-all duration-300 ${
+                    isActive ? 'border-[#DFFF00]/20 shadow-[0_4px_25px_rgba(223,255,0,0.03)]' : 'border-white/5'
+                  }`}>
+                    <div className="flex flex-col md:flex-row justify-between gap-4 items-start">
+                      <div className="space-y-1 text-left">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Stage 03</span>
+                          <h4 className="text-base font-bold text-white">Internship Readiness Training</h4>
+                          {isCompleted ? (
+                            <span className="px-2 py-0.5 bg-green-500/10 text-green-400 border border-green-500/25 rounded-full text-[9px] font-bold uppercase tracking-wider">Completed</span>
+                          ) : (
+                            <span className="px-2 py-0.5 bg-[#DFFF00]/10 text-[#DFFF00] border border-[#DFFF00]/25 rounded-full text-[9px] font-bold uppercase tracking-wider animate-pulse">In Progress</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400 max-w-lg leading-relaxed">
+                          Complete all structured learning modules and score gates to prepare for the Professional Certification Exam.
+                        </p>
+                      </div>
+                      
+                      <button 
+                        onClick={() => router.push('/dashboard/training-hub')}
+                        className={`px-5 py-3 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 shrink-0 shadow-sm ${
+                          isActive ? 'bg-[#DFFF00] text-[#1a2321] hover:brightness-110 font-black' : 'bg-white/5 hover:bg-white/10 text-[#dbf0de] border border-white/5'
+                        }`}
+                      >
+                        <BookOpen size={13} /> {isCompleted ? 'Review Modules' : 'Resume Training'}
+                      </button>
+                    </div>
+
+                    {/* Miniature Modules Track Panel */}
+                    <div className="mt-5 pt-5 border-t border-white/5 flex flex-wrap gap-2.5">
+                      {Array.from({ length: 5 }).map((_, i) => {
+                        const moduleNum = i + 1;
+                        const isQuizDone = quizSubmissions.some(sub => sub.module_number === moduleNum);
+                        return (
+                          <div 
+                            key={i}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold border ${
+                              isQuizDone 
+                                ? 'bg-green-500/5 text-green-400 border-green-500/20' 
+                                : isActive && i === completedQuizzesCount
+                                ? 'bg-[#DFFF00]/5 text-[#DFFF00] border-[#DFFF00]/20 animate-pulse'
+                                : 'bg-white/5 text-gray-500 border-white/5'
+                            }`}
+                          >
+                            {isQuizDone ? <Check size={10} className="text-green-400 stroke-[3px]" /> : <Play size={8} />}
+                            Module {moduleNum}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Stage 4: Final Exam */}
+            {(() => {
+              const isLocked = stageInt < 4;
+              const isActive = stageInt === 4;
+              const isCompleted = stageInt >= 5;
+              
+              return (
+                <div className="relative pl-8 md:pl-12 pb-8 border-l border-white/5 last:border-l-0">
+                  {/* Connector Node */}
+                  <div className={`absolute left-0 top-1.5 -translate-x-1/2 w-6 h-6 rounded-full border-4 border-[#1a2321] flex items-center justify-center text-[10px] font-black shadow-lg z-10 ${
+                    isCompleted ? 'bg-green-500 text-white shadow-[0_0_12px_rgba(34,197,94,0.3)]' : 
+                    isActive ? 'bg-[#DFFF00] text-[#1a2321] animate-pulse shadow-[0_0_12px_rgba(223,255,0,0.3)]' : 'bg-[#1a2321] border-gray-700 text-gray-500'
+                  }`}>
+                    {isCompleted ? <Check size={10} className="stroke-[3px]" /> : isLocked ? <Lock size={10} className="text-gray-500" /> : '04'}
+                  </div>
+                  
+                  <div className={`bg-[#26312f] rounded-[24px] p-6 border shadow-md transition-all duration-300 ${
+                    isLocked ? 'opacity-50' : 
+                    isActive ? 'border-[#DFFF00]/30 shadow-[0_4px_25px_rgba(223,255,0,0.05)]' : 'border-white/5'
+                  }`}>
+                    <div className="flex flex-col md:flex-row justify-between gap-4 items-start">
+                      <div className="space-y-1 text-left">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Stage 04</span>
+                          <h4 className="text-base font-bold text-white">Professional Certification Exam</h4>
+                          {isCompleted ? (
+                            <span className="px-2 py-0.5 bg-green-500/10 text-green-400 border border-green-500/25 rounded-full text-[9px] font-bold uppercase tracking-wider">Completed</span>
+                          ) : isActive ? (
+                            <span className="px-2 py-0.5 bg-[#DFFF00]/10 text-[#DFFF00] border border-[#DFFF00]/25 rounded-full text-[9px] font-bold uppercase tracking-wider animate-pulse">Unlocked & Ready</span>
+                          ) : (
+                            <span className="px-2 py-0.5 bg-white/5 text-gray-500 border border-white/5 rounded-full text-[9px] font-bold uppercase tracking-wider flex items-center gap-1"><Lock size={8} /> Locked</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400 max-w-lg leading-relaxed">
+                          Take the final professional certification exam. No minimum score is required to unlock subsequent stages or automatically generate your secure PDF certificate!
+                        </p>
+                      </div>
+
+                      {!isLocked && (
+                        <button 
+                          onClick={() => router.push('/dashboard/professional-exam')}
+                          className={`px-5 py-3 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 shrink-0 shadow-sm ${
+                            isActive ? 'bg-[#DFFF00] text-[#1a2321] hover:brightness-110 font-black' : 'bg-white/5 hover:bg-white/10 text-[#dbf0de] border border-white/5 font-black'
+                          }`}
+                        >
+                          <Award size={13} /> {isCompleted ? 'View Certificate' : 'Start Exam'}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Show score and certificate download if complete */}
+                    {isCompleted && (
+                      <div className="mt-5 pt-5 border-t border-white/5 space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-[#1a2321]/40 border border-white/5 rounded-2xl">
+                          <div className="space-y-1 text-left">
+                            <span className="text-[10px] text-gray-400 uppercase tracking-wider block font-bold">Your Exam Score</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xl font-black text-[#DFFF00]">{examSubmission?.percentage ?? '--'}%</span>
+                              <span className="text-xs text-gray-400 font-medium">({examSubmission?.score ?? '--'} / 75 Correct)</span>
                             </div>
+                          </div>
+
+                          {loadingCertificate ? (
+                            <div className="flex items-center gap-2 text-xs text-gray-400">
+                              <Loader2 size={14} className="animate-spin text-[#DFFF00]" /> Generating PDF...
+                            </div>
+                          ) : certificate ? (
+                            <a 
+                              href={`/api/certificates/download?id=${certificate.certificate_id}`}
+                              className="px-4 py-2 bg-[#dbf0de] hover:bg-[#cbe2ce] text-[#1a2321] rounded-xl text-xs font-black flex items-center gap-1.5 transition-all shadow-sm shrink-0 self-start sm:self-center"
+                            >
+                              <FileText size={13} /> Download Certificate (PDF)
+                            </a>
+                          ) : null}
                         </div>
-                    ) : (
-                        <div className="relative flex flex-col items-center" id="medal-inprogress-wrapper">
-                            <Award className="w-8 h-8 text-gray-400 opacity-60" id="in-progress-medal-icon" />
-                            <span className="text-[10px] font-bold text-gray-400 mt-0.5">{applicant.progress_percent}%</span>
-                        </div>
+                      </div>
                     )}
+                  </div>
                 </div>
-            </div>
-            <div>
-                <h3 className="text-lg font-bold flex items-center gap-1.5 justify-center md:justify-start mb-1 flex-wrap"><BookOpen className="text-[#DFFF00] w-4 h-4 flex-shrink-0" /> {applicant.progress_percent}% Complete</h3>
-                <p className="text-[11px] text-gray-400 text-center md:text-left leading-relaxed">You&apos;re making steady progress. Access your training modules to continue.</p>
-            </div>
-        </div>
+              );
+            })()}
 
-        {/* Dynamic Column 2: If Exam Taken, Show Result Card; Else show Exam Locked/Inactive message */}
-        {loadingExam ? (
-          <div className="bg-[rgb(50,60,55)] p-6 md:p-8 rounded-3xl border border-white/10 shadow-lg flex flex-col justify-center items-center gap-4 md:col-span-1">
-            <Loader2 className="animate-spin text-[#DFFF00]" size={36} />
-            <p className="text-gray-400 text-sm">Loading exam results...</p>
-          </div>
-        ) : stageInt >= 5 ? (
-          <div className="bg-[rgb(50,60,55)] p-6 md:p-8 rounded-3xl border border-white/10 shadow-lg flex flex-col justify-between gap-4 md:col-span-1" id="dashboard-exam-outcome-badge">
-            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                <Award className="text-[#DFFF00] w-4 h-4 flex-shrink-0" /> Certification Score
-              </h3>
-              <span className="text-[8px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                Submitted
-              </span>
-            </div>
+            {/* Stage 5: Interview */}
+            {(() => {
+              const isLocked = stageInt < 5;
+              const isActive = stageInt === 5;
+              const isCompleted = stageInt >= 6;
+              
+              return (
+                <div className="relative pl-8 md:pl-12 pb-8 border-l border-white/5 last:border-l-0">
+                  {/* Connector Node */}
+                  <div className={`absolute left-0 top-1.5 -translate-x-1/2 w-6 h-6 rounded-full border-4 border-[#1a2321] flex items-center justify-center text-[10px] font-black shadow-lg z-10 ${
+                    isCompleted ? 'bg-green-500 text-white shadow-[0_0_12px_rgba(34,197,94,0.3)]' : 
+                    isActive ? 'bg-[#DFFF00] text-[#1a2321] animate-pulse shadow-[0_0_12px_rgba(223,255,0,0.3)]' : 'bg-[#1a2321] border-gray-700 text-gray-500'
+                  }`}>
+                    {isCompleted ? <Check size={10} className="stroke-[3px]" /> : isLocked ? <Lock size={10} className="text-gray-500" /> : '05'}
+                  </div>
+                  
+                  <div className={`bg-[#26312f] rounded-[24px] p-6 border shadow-md transition-all duration-300 ${
+                    isLocked ? 'opacity-50' : 
+                    isActive ? 'border-[#DFFF00]/30 shadow-[0_4px_25px_rgba(223,255,0,0.05)] bg-[#1e2725]' : 'border-white/5'
+                  }`}>
+                    <div className="flex flex-col md:flex-row justify-between gap-4 items-start">
+                      <div className="space-y-1 text-left">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Stage 05</span>
+                          <h4 className="text-base font-bold text-white">Professional Interview</h4>
+                          {isCompleted ? (
+                            <span className="px-2 py-0.5 bg-green-500/10 text-green-400 border border-green-500/25 rounded-full text-[9px] font-bold uppercase tracking-wider">Completed</span>
+                          ) : isActive ? (
+                            <span className="px-2 py-0.5 bg-[#DFFF00]/10 text-[#DFFF00] border border-[#DFFF00]/25 rounded-full text-[9px] font-bold uppercase tracking-wider animate-pulse">Unlocked & Ready</span>
+                          ) : (
+                            <span className="px-2 py-0.5 bg-white/5 text-gray-500 border border-white/5 rounded-full text-[9px] font-bold uppercase tracking-wider flex items-center gap-1"><Lock size={8} /> Locked</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400 max-w-lg leading-relaxed">
+                          Complete your alignment assessment. Record your professional motivation and goals to complete the interview stage and unlock direct placement job access.
+                        </p>
+                      </div>
 
-            <div className="space-y-1.5 my-0.5">
-              <div className="flex justify-between items-end border-b border-white/5 pb-1 text-xs">
-                <span className="text-gray-400">Correct Answers:</span>
-                <span className="font-bold text-white">{examSubmission?.score ?? '--'} <span className="text-[10px] text-gray-500 font-normal">/ 75</span></span>
-              </div>
-              <div className="flex justify-between items-end border-b border-white/5 pb-1 text-xs">
-                <span className="text-gray-400">Score Percentage:</span>
-                <span className="font-bold text-[#DFFF00]">{examSubmission?.percentage ?? '--'}%</span>
-              </div>
-              <div className="flex justify-between items-end text-xs">
-                <span className="text-gray-400">Status Eligibility:</span>
-                <div className="flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-                  <span className="text-[10px] font-bold text-green-400 uppercase tracking-wider">ELIGIBLE</span>
+                      {isActive && !interviewFormOpen && (
+                        <button 
+                          onClick={() => setInterviewFormOpen(true)}
+                          className="px-5 py-3 bg-[#DFFF00] text-[#1a2321] hover:brightness-110 font-black text-xs rounded-xl transition-all flex items-center gap-1.5 shrink-0 shadow-md animate-pulse"
+                        >
+                          Complete Interview <ArrowRight size={13} />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Interview Form Expanded */}
+                    {isActive && interviewFormOpen && (
+                      <div className="mt-6 pt-6 border-t border-white/5 text-left">
+                        <form onSubmit={handleInterviewSubmit} className="space-y-4">
+                          <div className="bg-[#1a2321] border border-white/5 p-4 rounded-2xl space-y-1.5 mb-4">
+                            <h5 className="text-xs font-bold text-[#DFFF00] uppercase tracking-wider flex items-center gap-1.5">
+                              <Sparkles size={12} /> Interactive Interview Assessment
+                            </h5>
+                            <p className="text-[11px] text-gray-400 leading-relaxed">
+                              Review your readiness, record your profile statements, and submit them below. Match coordinators will evaluate these statements for direct placements.
+                            </p>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold text-gray-300 block uppercase tracking-wider">1. Career Motivation & Goals</label>
+                            <textarea 
+                              value={careerGoals}
+                              onChange={(e) => setCareerGoals(e.target.value)}
+                              placeholder="Briefly describe your career motivations, what you hope to accomplish, and why you are interested in our corporate partner programs."
+                              rows={3}
+                              required
+                              className="w-full bg-[#1a2321] border border-white/10 rounded-xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#DFFF00]/50 transition-colors"
+                            ></textarea>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold text-gray-300 block uppercase tracking-wider">2. Technical Problem Solving Reflection</label>
+                            <textarea 
+                              value={problemSolving}
+                              onChange={(e) => setProblemSolving(e.target.value)}
+                              placeholder="Discuss a challenging roadblocks you faced recently when coding or designing and how you went about resolving it."
+                              rows={3}
+                              required
+                              className="w-full bg-[#1a2321] border border-white/10 rounded-xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#DFFF00]/50 transition-colors"
+                            ></textarea>
+                          </div>
+
+                          <div className="flex gap-2.5 pt-2">
+                            <button 
+                              type="submit"
+                              disabled={submittingInterview}
+                              className="px-5 py-3 bg-[#DFFF00] text-[#1a2321] disabled:opacity-50 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all"
+                            >
+                              {submittingInterview ? (
+                                <>Submitting Interview... <Loader2 size={13} className="animate-spin" /></>
+                              ) : (
+                                <>Submit Responses & Clear Stage <Send size={13} /></>
+                              )}
+                            </button>
+                            <button 
+                              type="button"
+                              onClick={() => setInterviewFormOpen(false)}
+                              className="px-4 py-3 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl text-xs font-bold transition-all"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    )}
+
+                    {isCompleted && (
+                      <div className="mt-4 p-4 bg-green-500/5 border border-green-500/10 rounded-2xl flex items-start gap-2.5 text-left">
+                        <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="text-[11px] font-black text-green-400 block uppercase tracking-wider">Placement Interview Completed</span>
+                          <p className="text-[11px] text-gray-400 leading-normal mt-0.5">
+                            Your alignment answers have been successfully locked and updated. Your candidate record has officially cleared the interview phase!
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
 
-            <button
-              onClick={() => router.push('/dashboard/professional-exam')}
-              className="w-full py-2 bg-white/5 hover:bg-white/10 text-[10px] font-bold text-white rounded-lg border border-white/5 transition-all flex items-center justify-center gap-1.5"
-            >
-              Assessment Breakdown <ArrowRight size={11} />
-            </button>
-          </div>
-        ) : (
-          <div className="bg-[rgb(50,60,55)] p-6 md:p-8 rounded-3xl border border-white/10 shadow-lg flex flex-col justify-center items-center text-center gap-2.5 md:col-span-1">
-            <Award className="w-8 h-8 text-gray-500" />
-            <div>
-              <h3 className="text-sm font-bold text-gray-300">Professional Exam</h3>
-              <p className="text-[10px] text-gray-400 mt-0.5 max-w-[180px] mx-auto leading-relaxed">
-                {stageInt === 4 
-                  ? 'Ready to take! Start via top banner.' 
-                  : 'Complete all training modules to unlock the final certification exam.'}
-              </p>
-            </div>
-            {stageInt === 4 && (
-              <button
-                onClick={() => router.push('/dashboard/professional-exam')}
-                className="px-4 py-1.5 bg-[#DFFF00]/10 hover:bg-[#DFFF00]/20 text-[#DFFF00] border border-[#DFFF00]/20 text-[10px] font-bold rounded-lg transition-all"
-              >
-                Go to Exam Room
-              </button>
-            )}
-          </div>
-        )}
+            {/* Stage 6: Job Pool Access */}
+            {(() => {
+              const isLocked = stageInt < 6;
+              
+              return (
+                <div className="relative pl-8 md:pl-12">
+                  {/* Connector Node */}
+                  <div className={`absolute left-0 top-1.5 -translate-x-1/2 w-6 h-6 rounded-full border-4 border-[#1a2321] flex items-center justify-center text-[10px] font-black shadow-lg z-10 ${
+                    !isLocked ? 'bg-[#DFFF00] text-[#1a2321] shadow-[0_0_15px_rgba(223,255,0,0.5)] border-white' : 'bg-[#1a2321] border-gray-700 text-gray-500'
+                  }`}>
+                    {!isLocked ? <Check size={10} className="stroke-[3px]" /> : <Lock size={10} className="text-gray-500" />}
+                  </div>
+                  
+                  <div className={`bg-[#26312f] rounded-[24px] p-6 border shadow-md transition-all duration-300 ${
+                    isLocked ? 'opacity-50' : 'border-[#DFFF00]/30 shadow-[0_4px_25px_rgba(223,255,0,0.15)] bg-gradient-to-r from-[#212c29] to-[#2a3834]'
+                  }`}>
+                    <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
+                      <div className="space-y-1 text-left">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Stage 06</span>
+                          <h4 className="text-base font-bold text-white">Career Job Pool Access</h4>
+                          {!isLocked ? (
+                            <span className="px-2 py-0.5 bg-[#DFFF00]/10 text-[#DFFF00] border border-[#DFFF00]/25 rounded-full text-[9px] font-bold uppercase tracking-wider animate-pulse flex items-center gap-1"><Sparkles size={8} /> Unlocked</span>
+                          ) : (
+                            <span className="px-2 py-0.5 bg-white/5 text-gray-500 border border-white/5 rounded-full text-[9px] font-bold uppercase tracking-wider flex items-center gap-1"><Lock size={8} /> Locked</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400 max-w-lg leading-relaxed">
+                          Your profile is authorized in the placement job pool. Connect with active hiring teams, submit applications, and match with direct internship roles.
+                        </p>
+                      </div>
 
-        {/* Job Pool Card */}
-        <div className={`bg-[rgb(50,60,55)] p-8 rounded-3xl border border-white/10 shadow-lg flex flex-col items-center justify-center gap-4 md:col-span-1 ${isJobPoolLocked ? 'opacity-50' : ''}`}>
-            {isJobPoolLocked ? <Lock size={36} className="text-gray-400" /> : <Unlock size={36} className="text-[#DFFF00]" />}
-            <span className={`font-bold text-xs text-center ${isJobPoolLocked ? 'text-gray-400': 'text-[#DFFF00]'}`}>{isJobPoolLocked ? 'Job Pool Locked' : 'Job Pool Unlocked'}</span>
+                      {!isLocked && (
+                        <button 
+                          onClick={() => router.push('/dashboard/job-pool')}
+                          className="px-5 py-3.5 bg-[#DFFF00] text-[#1a2321] hover:brightness-110 font-extrabold text-xs rounded-xl transition-all flex items-center gap-1 shadow-[0_0_15px_rgba(223,255,0,0.35)] shrink-0"
+                        >
+                          Explore Job Pool <Briefcase size={13} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+          </div>
         </div>
       </div>
     </DashboardLayout>
   );
 }
+

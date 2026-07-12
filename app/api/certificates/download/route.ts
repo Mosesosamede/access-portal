@@ -33,10 +33,15 @@ export async function GET(req: NextRequest) {
     const pdfBuffer = await response.arrayBuffer();
 
     // Return the PDF with download headers
+    const viewInline = searchParams.get('view') === 'true';
+    const contentDisposition = viewInline 
+      ? `inline; filename="${cert.certificate_id}.pdf"`
+      : `attachment; filename="${cert.certificate_id}.pdf"`;
+
     return new NextResponse(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${cert.certificate_id}.pdf"`,
+        'Content-Disposition': contentDisposition,
       },
     });
   } catch (err: any) {

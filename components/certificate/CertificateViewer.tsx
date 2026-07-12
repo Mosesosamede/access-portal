@@ -39,7 +39,7 @@ export function CertificateViewer({ pdfUrl, certificateId }: CertificateViewerPr
 
         {/* PDF Iframe (Uses standard browser PDF renderer) */}
         <iframe
-          src={`${pdfUrl}#toolbar=0&navpanes=0`}
+          src={`/api/certificates/download?id=${certificateId}&view=true#toolbar=0&navpanes=0`}
           className="w-full h-full border-0"
           onLoad={() => setLoading(false)}
           title={`Certificate Preview: ${certificateId}`}
@@ -51,7 +51,7 @@ export function CertificateViewer({ pdfUrl, certificateId }: CertificateViewerPr
         <p>If the preview doesn&apos;t load automatically, use the buttons below.</p>
         <div className="flex items-center gap-3">
           <a
-            href={pdfUrl}
+            href={`/api/certificates/download?id=${certificateId}&view=true`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-gray-300 hover:text-[#dbf0de] transition-colors"
