@@ -179,7 +179,7 @@ export default function ProfessionalExamPage() {
 
   // Certificate Auto-Generation & Loading Hook
   useEffect(() => {
-    if (!applicant || !submission || !submission.submitted_at || !(submission.passed || submission.percentage >= 75)) return;
+    if (!applicant || !submission || !submission.submitted_at) return;
 
     const autoGenerateAndLoadCertificate = async () => {
       try {
@@ -205,7 +205,7 @@ export default function ProfessionalExamPage() {
     };
 
     autoGenerateAndLoadCertificate();
-  }, [applicant?.id, submission?.submitted_at, submission?.passed, submission?.percentage]);
+  }, [applicant?.id, submission?.submitted_at]);
 
   // 1. Initial Load: Questions and Submissions
   useEffect(() => {
@@ -541,46 +541,37 @@ export default function ProfessionalExamPage() {
             </div>
 
             {/* Certificate Section */}
-            {(submission.passed || submission.percentage >= 75) ? (
-              <div className="max-w-2xl mx-auto mt-8 text-left space-y-6">
-                <div className="border-t border-white/5 pt-6">
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                    <Award className="text-[#dbf0de] w-5 h-5" /> Your Professional Certificate
-                  </h3>
+            <div className="max-w-2xl mx-auto mt-8 text-left space-y-6">
+              <div className="border-t border-white/5 pt-6">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <Award className="text-[#dbf0de] w-5 h-5" /> Your Professional Certificate
+                </h3>
+              </div>
+              {loadingCertificate ? (
+                <div className="bg-[#1c2624] border border-white/5 rounded-3xl p-8 text-center flex flex-col items-center justify-center space-y-3">
+                  <Loader2 className="w-8 h-8 text-[#DFFF00] animate-spin" />
+                  <p className="text-xs text-gray-400">Preparing secure PDF certificate...</p>
                 </div>
-                {loadingCertificate ? (
-                  <div className="bg-[#1c2624] border border-white/5 rounded-3xl p-8 text-center flex flex-col items-center justify-center space-y-3">
-                    <Loader2 className="w-8 h-8 text-[#DFFF00] animate-spin" />
-                    <p className="text-xs text-gray-400">Preparing secure PDF certificate...</p>
-                  </div>
-                ) : certificateError ? (
-                  <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-xs text-red-400">
-                    Failed to load certificate: {certificateError}
-                  </div>
-                ) : certificate ? (
-                  <div className="space-y-6">
-                    <CertificateCard
-                      certificateId={certificate.certificate_id}
-                      studentName={certificate.student_name}
-                      courseName={certificate.course_name}
-                      awardDate={certificate.award_date}
-                      pdfUrl={certificate.pdf_url}
-                    />
-                    <CertificateViewer
-                      pdfUrl={certificate.pdf_url}
-                      certificateId={certificate.certificate_id}
-                    />
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 max-w-2xl mx-auto mt-8 text-left space-y-2">
-                <h4 className="text-red-400 font-bold text-sm">Passing Score Not Achieved</h4>
-                <p className="text-xs text-gray-400 leading-relaxed">
-                  You scored <strong>{submission.percentage}%</strong>. The passing benchmark for the professional certification exam is <strong>75%</strong>. You are not eligible for certification at this time. Please contact HR coordination for retake procedures.
-                </p>
-              </div>
-            )}
+              ) : certificateError ? (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-xs text-red-400">
+                  Failed to load certificate: {certificateError}
+                </div>
+              ) : certificate ? (
+                <div className="space-y-6">
+                  <CertificateCard
+                    certificateId={certificate.certificate_id}
+                    studentName={certificate.student_name}
+                    courseName={certificate.course_name}
+                    awardDate={certificate.award_date}
+                    pdfUrl={certificate.pdf_url}
+                  />
+                  <CertificateViewer
+                    pdfUrl={certificate.pdf_url}
+                    certificateId={certificate.certificate_id}
+                  />
+                </div>
+              ) : null}
+            </div>
 
             {/* Return Hub Button */}
             <div className="pt-10">

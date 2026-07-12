@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // 3. Verify passed final assessment
+    // 3. Verify final assessment has been submitted
     const { data: examSubmission, error: examErr } = await supabase
       .from('professional_exam_submissions')
       .select('*')
@@ -57,11 +57,9 @@ export async function POST(req: NextRequest) {
       console.error('Error fetching exam submission:', examErr);
     }
 
-    const hasPassedExam = examSubmission && (examSubmission.passed || (examSubmission.percentage && examSubmission.percentage >= 75));
-
-    if (!hasPassedExam) {
+    if (!examSubmission) {
       return NextResponse.json({
-        error: 'Assessment not passed: Student has not passed the final Professional Certification Exam yet.'
+        error: 'Assessment not submitted: Student has not submitted the final Professional Certification Exam yet.'
       }, { status: 400 });
     }
 
