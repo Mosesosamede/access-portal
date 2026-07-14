@@ -1,6 +1,7 @@
 import type {Metadata} from 'next';
 import './globals.css'; // Global styles
 import { ApplicantProvider } from '@/components/ApplicantContext';
+import ReferralTracker from '@/components/ReferralTracker';
 
 export const metadata: Metadata = {
   title: 'Deloxe HR Ecosystem',
@@ -22,6 +23,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           <div className="absolute bottom-[20%] left-[20%] w-72 h-72 bg-[#dbf0de] rounded-full mix-blend-screen filter blur-3xl animate-pulse delay-1000"></div>
         </div>
         <ApplicantProvider>
+            <ReferralTracker />
             <div className="relative z-10">{children}</div>
         </ApplicantProvider>
       </body>

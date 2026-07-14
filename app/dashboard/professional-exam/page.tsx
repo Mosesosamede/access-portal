@@ -568,6 +568,9 @@ export default function ProfessionalExamPage() {
                   <CertificateViewer
                     pdfUrl={certificate.pdf_url}
                     certificateId={certificate.certificate_id}
+                    studentName={certificate.student_name}
+                    awardDate={certificate.award_date}
+                    courseName={certificate.course_name}
                   />
                 </div>
               ) : null}
