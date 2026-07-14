@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
           email: tx.customer.email,
           amountPaid: Number(tx.amount),
           commissionAmount: rewardRate,
-          payoutStatus: 'pending',
+          payoutStatus: 'verified',
           createdAt: FieldValue.serverTimestamp(),
         });
 
@@ -129,6 +129,7 @@ export async function POST(req: NextRequest) {
             totalCommission: rewardRate,
             balance: rewardRate,
             lastUpdated: FieldValue.serverTimestamp(),
+            updatedAt: FieldValue.serverTimestamp(),
           });
         } else {
           await statsRef.update({
@@ -136,6 +137,7 @@ export async function POST(req: NextRequest) {
             totalCommission: FieldValue.increment(rewardRate),
             balance: FieldValue.increment(rewardRate),
             lastUpdated: FieldValue.serverTimestamp(),
+            updatedAt: FieldValue.serverTimestamp(),
           });
         }
 

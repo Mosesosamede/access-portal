@@ -46,11 +46,11 @@ export async function GET(req: NextRequest) {
     }
 
     // Generate a human-readable clickId beginning with DELX_CLI_
-    const randomHex = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const randomHex = Math.random().toString(36).substring(2, 12).toUpperCase();
     const clickId = `DELX_CLI_${randomHex}`;
 
     // 3. Create referral_clicks document
-    const clickRef = db.collection('referral_clicks').doc();
+    const clickRef = db.collection('referral_clicks').doc(clickId);
     await clickRef.set({
       clickId,
       partnerId,
@@ -75,11 +75,13 @@ export async function GET(req: NextRequest) {
         totalCommission: 0,
         balance: 0,
         lastUpdated: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       });
     } else {
       await statsRef.update({
         totalClicks: FieldValue.increment(1),
         lastUpdated: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       });
     }
 

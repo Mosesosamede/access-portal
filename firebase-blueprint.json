@@ -25,9 +25,10 @@
         "totalPurchases": { "type": "integer", "description": "Total conversions" },
         "totalCommission": { "type": "number", "description": "Cumulative earnings in local/primary currency" },
         "balance": { "type": "number", "description": "Current unpaid commission balance" },
-        "lastUpdated": { "type": "string", "format": "date-time", "description": "Timestamp of the last metric update" }
+        "lastUpdated": { "type": "string", "format": "date-time", "description": "Timestamp of the last metric update" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Timestamp of the last atomic update" }
       },
-      "required": ["partnerId", "totalClicks", "totalPurchases", "totalCommission", "balance", "lastUpdated"]
+      "required": ["partnerId", "totalClicks", "totalPurchases", "totalCommission", "balance", "lastUpdated", "updatedAt"]
     },
     "ReferralClick": {
       "title": "ReferralClick",

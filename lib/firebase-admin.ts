@@ -56,7 +56,16 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
 } 
 // Or individual service account parameters
 else if (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
+  let privateKey = process.env.FIREBASE_PRIVATE_KEY.trim();
+  // Strip starting and ending double or single quotes if present
+  if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+    privateKey = privateKey.slice(1, -1);
+  } else if (privateKey.startsWith("'") && privateKey.endsWith("'")) {
+    privateKey = privateKey.slice(1, -1);
+  }
+  // Replace literal \n sequence with actual newlines
+  privateKey = privateKey.replace(/\\n/g, '\n').trim();
+
   credential = cert({
     projectId: projectId,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
