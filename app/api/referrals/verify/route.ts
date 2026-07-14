@@ -87,6 +87,18 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // 4b. Create in-app notification for the partner
+    const notificationRef = db.collection('notifications').doc();
+    const notificationId = notificationRef.id;
+    await notificationRef.set({
+      notificationId,
+      partnerId,
+      title: 'New Referral Click',
+      message: `Someone visited your referral link from ${country} using ${browser} on ${device}.`,
+      read: false,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+
     // 5. Store referral code securely in an HttpOnly cookie
     const response = NextResponse.json({
       success: true,

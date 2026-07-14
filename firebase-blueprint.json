@@ -91,6 +91,20 @@
         "recordedBy": { "type": "string", "description": "Admin email who recorded the payout" }
       },
       "required": ["payoutId", "partnerId", "amountPaid", "payoutDate", "recordedBy"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "In-app notifications for partners",
+      "type": "object",
+      "properties": {
+        "notificationId": { "type": "string", "description": "Unique ID of the notification" },
+        "partnerId": { "type": "string", "description": "Recipient partner ID" },
+        "title": { "type": "string", "description": "Title of the notification" },
+        "message": { "type": "string", "description": "Body message of the notification" },
+        "read": { "type": "boolean", "description": "Whether the notification has been read" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation" }
+      },
+      "required": ["notificationId", "partnerId", "title", "message", "read", "createdAt"]
     }
   },
   "firestore": {
@@ -117,6 +131,10 @@
     "/payout_logs/{payoutId}": {
       "schema": "PayoutLog",
       "description": "Logs of clears and payouts to partners"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "In-app notifications for partners"
     }
   }
 }
