@@ -47,57 +47,69 @@ export async function GET(req: NextRequest) {
       device = 'Tablet';
     }
 
-    // Generate a human-readable clickId beginning with DELX_CLI_
-    const randomHex = Math.random().toString(36).substring(2, 12).toUpperCase();
-    const clickId = `DELX_CLI_${randomHex}`;
+    // Check for duplicate click (same partnerId, ip, and device)
+    const duplicateQuery = await db.collection('referral_clicks')
+      .where('partnerId', '==', partnerId)
+      .where('ip', '==', ip)
+      .where('device', '==', device)
+      .limit(1)
+      .get();
 
-    // 3. Create referral_clicks document
-    const clickRef = db.collection('referral_clicks').doc(clickId);
-    await clickRef.set({
-      clickId,
-      partnerId,
-      referralCode: code,
-      browser,
-      device,
-      country,
-      ip,
-      landingPage: path,
-      createdAt: FieldValue.serverTimestamp(),
-    });
+    const isDuplicate = !duplicateQuery.empty;
 
-    // 4. Update corresponding partner_stats document
-    const statsRef = db.collection('partner_stats').doc(partnerId);
-    const statsDoc = await statsRef.get();
+    if (!isDuplicate) {
+      // Generate a human-readable clickId beginning with DELX_CLI_
+      const randomHex = Math.random().toString(36).substring(2, 12).toUpperCase();
+      const clickId = `DELX_CLI_${randomHex}`;
 
-    if (!statsDoc.exists) {
-      await statsRef.set({
+      // 3. Create referral_clicks document
+      const clickRef = db.collection('referral_clicks').doc(clickId);
+      await clickRef.set({
+        clickId,
         partnerId,
-        totalClicks: 1,
-        totalPurchases: 0,
-        totalCommission: 0,
-        balance: 0,
-        lastUpdated: FieldValue.serverTimestamp(),
-        updatedAt: FieldValue.serverTimestamp(),
+        referralCode: code,
+        browser,
+        device,
+        country,
+        ip,
+        landingPage: path,
+        createdAt: FieldValue.serverTimestamp(),
       });
-    } else {
-      await statsRef.update({
-        totalClicks: FieldValue.increment(1),
-        lastUpdated: FieldValue.serverTimestamp(),
-        updatedAt: FieldValue.serverTimestamp(),
+
+      // 4. Update corresponding partner_stats document
+      const statsRef = db.collection('partner_stats').doc(partnerId);
+      const statsDoc = await statsRef.get();
+
+      if (!statsDoc.exists) {
+        await statsRef.set({
+          partnerId,
+          totalClicks: 1,
+          totalPurchases: 0,
+          totalCommission: 0,
+          balance: 0,
+          lastUpdated: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+      } else {
+        await statsRef.update({
+          totalClicks: FieldValue.increment(1),
+          lastUpdated: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+      }
+
+      // 4b. Create in-app notification for the partner
+      const notificationRef = db.collection('notifications').doc();
+      const notificationId = notificationRef.id;
+      await notificationRef.set({
+        notificationId,
+        partnerId,
+        title: 'New Referral Click',
+        message: `Someone visited your referral link from ${country} using ${browser} on ${device}.`,
+        read: false,
+        createdAt: FieldValue.serverTimestamp(),
       });
     }
-
-    // 4b. Create in-app notification for the partner
-    const notificationRef = db.collection('notifications').doc();
-    const notificationId = notificationRef.id;
-    await notificationRef.set({
-      notificationId,
-      partnerId,
-      title: 'New Referral Click',
-      message: `Someone visited your referral link from ${country} using ${browser} on ${device}.`,
-      read: false,
-      createdAt: FieldValue.serverTimestamp(),
-    });
 
     // 5. Store referral code securely in an HttpOnly cookie
     const response = NextResponse.json({
@@ -106,6 +118,7 @@ export async function GET(req: NextRequest) {
       referralCode: code,
       rewardRate: partnerData.rewardRate,
       payoutFrequency: partnerData.payoutFrequency,
+      isDuplicate,
     });
 
     response.cookies.set('referral_code', code, {
