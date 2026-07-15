@@ -41,7 +41,7 @@ const QUESTIONS = [
 
 export default function AIInterviewPage() {
   const router = useRouter();
-  const { applicant, refreshApplicantData } = useApplicant();
+  const { applicant, user, refreshApplicantData } = useApplicant();
 
   // Interview state from DB
   const [interview, setInterview] = useState<any>(null);
@@ -310,7 +310,8 @@ export default function AIInterviewPage() {
 
     try {
       let videoUrl = '';
-      const filename = `${applicant?.id || 'sandbox'}/${interview.id}_q${currentQuestion.number}.webm`;
+      const userId = user?.id || applicant?.user_id || 'sandbox';
+      const filename = `${userId}/${interview.id}_q${currentQuestion.number}.webm`;
 
       setUploadProgress(30);
 
