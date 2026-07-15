@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
+import { getInterviewAnswers, saveEvaluationResult } from '@/lib/db-interview';
 
 // Lazily get Groq client
 let groqClient: Groq | null = null;
@@ -51,14 +52,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing interview ID' }, { status: 400 });
     }
 
-    // Retrieve all three submitted answers
-    const { data: answers, error: answersError } = await supabase
-      .from('interview_answers')
-      .select('*')
-      .eq('interview_id', interviewId)
-      .order('question_number', { ascending: true });
+    // Retrieve all three submitted answers using our dual db adapter
+    const answers = await getInterviewAnswers(supabase, user.id, interviewId);
 
-    if (answersError || !answers || answers.length < 3) {
+    if (!answers || answers.length < 3) {
       return NextResponse.json({ 
         error: `Could not retrieve all 3 answers for this interview. Found ${answers?.length || 0} answers.` 
       }, { status: 400 });
@@ -133,59 +130,24 @@ ${mergedTranscript}`
 
     const evalResult = JSON.parse(resultJsonStr);
 
-    // Insert AI evaluation results into interview_ai_results (will trigger email queue entry in DB)
-    const { data: aiResult, error: insertAiError } = await supabase
-      .from('interview_ai_results')
-      .insert({
-        interview_id: interviewId,
-        communication_score: evalResult.communication_score,
-        confidence_score: evalResult.confidence_score,
-        professionalism_score: evalResult.professionalism_score,
-        career_alignment_score: evalResult.career_alignment_score,
-        knowledge_score: evalResult.knowledge_score,
-        motivation_score: evalResult.motivation_score,
-        internship_readiness_score: evalResult.internship_readiness_score,
-        overall_score: evalResult.overall_score,
-        recommendation: evalResult.recommendation,
-        strengths: evalResult.strengths,
-        weaknesses: evalResult.weaknesses,
-        summary: evalResult.summary,
-        detailed_feedback: evalResult.detailed_feedback,
-        ai_model: 'llama-3.1-8b-instant',
-        processing_time: processingTimeMs
-      })
-      .select('*')
-      .single();
-
-    if (insertAiError) {
-      console.error('Failed to insert AI results:', insertAiError);
-      return NextResponse.json({ error: insertAiError.message }, { status: 500 });
-    }
-
-    // Set interview overall_score and recommendation details, and transition status to review_ongoing
-    const { error: updateInterviewError } = await supabase
-      .from('interviews')
-      .update({
-        overall_score: evalResult.overall_score,
-        recommendation: evalResult.recommendation,
-        status: 'review_ongoing', // Stays in review_ongoing until simulated delay completes
-        ai_review_status: 'completed',
-        email_status: 'queued',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', interviewId);
-
-    if (updateInterviewError) {
-      console.error('Failed to update interview details:', updateInterviewError);
-    }
-
-    // Create history entry
-    await supabase.from('interview_status_history').insert({
+    // Save evaluation using our dual db adapter (handles result persistence, interview status transition, and logs)
+    const aiResult = await saveEvaluationResult(supabase, user.id, interviewId, {
       interview_id: interviewId,
-      previous_status: 'in_progress',
-      new_status: 'review_ongoing',
-      changed_by: 'system',
-      reason: 'AI evaluation finished, review pending final dispatch.'
+      communication_score: Number(evalResult.communication_score),
+      confidence_score: Number(evalResult.confidence_score),
+      professionalism_score: Number(evalResult.professionalism_score),
+      career_alignment_score: Number(evalResult.career_alignment_score),
+      knowledge_score: Number(evalResult.knowledge_score),
+      motivation_score: Number(evalResult.motivation_score),
+      internship_readiness_score: Number(evalResult.internship_readiness_score),
+      overall_score: Number(evalResult.overall_score),
+      recommendation: evalResult.recommendation,
+      strengths: evalResult.strengths,
+      weaknesses: evalResult.weaknesses,
+      summary: evalResult.summary,
+      detailed_feedback: evalResult.detailed_feedback,
+      ai_model: 'llama-3.1-8b-instant',
+      processing_time: processingTimeMs
     });
 
     return NextResponse.json({

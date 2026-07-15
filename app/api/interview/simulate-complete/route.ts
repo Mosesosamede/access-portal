@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { getUserInterview, getEvaluationResult, completeInterviewWithSimulation } from '@/lib/db-interview';
 
 function getServerSupabase(cookieStore: any) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -38,41 +39,40 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing interview ID' }, { status: 400 });
     }
 
-    // Retrieve interview and AI results
-    const { data: interview, error: intError } = await supabase
-      .from('interviews')
-      .select('*')
-      .eq('id', interviewId)
-      .eq('user_id', user.id)
-      .single();
+    // Retrieve interview and AI results using our dual db adapter
+    const interview = await getUserInterview(supabase, user.id);
 
-    if (intError || !interview) {
+    if (!interview) {
       return NextResponse.json({ error: 'Interview not found' }, { status: 404 });
     }
 
-    const { data: aiResult, error: aiError } = await supabase
-      .from('interview_ai_results')
-      .select('*')
-      .eq('interview_id', interviewId)
-      .single();
+    const aiResult = await getEvaluationResult(supabase, user.id, interview.id);
 
-    if (aiError || !aiResult) {
+    if (!aiResult) {
       return NextResponse.json({ error: 'AI results not found' }, { status: 404 });
     }
 
-    // Retrieve any queued email jobs
-    const { data: emailJob, error: emailJobError } = await supabase
-      .from('interview_email_queue')
-      .select('*')
-      .eq('interview_id', interviewId)
-      .eq('status', 'pending')
-      .maybeSingle();
+    // Retrieve any queued email jobs (safely try/catch in case table doesn't exist)
+    let emailJob = null;
+    try {
+      const { data } = await supabase
+        .from('interview_email_queue')
+        .select('*')
+        .eq('interview_id', interviewId)
+        .eq('status', 'pending')
+        .maybeSingle();
+      emailJob = data;
+    } catch (err) {
+      console.warn('Could not query interview_email_queue, using direct dispatch fallback:', err);
+    }
+
+    const recipientEmail = emailJob ? emailJob.email : user.email;
 
     let emailSent = false;
     let emailErrorMsg = null;
 
     // Send email using Nodemailer if configuration exists
-    if (emailJob && process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: Number(process.env.SMTP_PORT) || 587,
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
           </div>
           
           <div style="background-color: #1e2624; padding: 30px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px;">
-            <h2 style="color: #ffffff; margin-top: 0; font-size: 20px; font-weight: 700;">Hi ${user.email},</h2>
+            <h2 style="color: #ffffff; margin-top: 0; font-size: 20px; font-weight: 700;">Hi ${recipientEmail},</h2>
             <p style="color: #cbd5e0; line-height: 1.6; font-size: 14px;">
               ${isAccepted 
                 ? `Fantastic news! You have successfully passed your interactive placement readiness interview. Our AI evaluation engine and matchmaking committee have approved your candidacy.` 
@@ -148,7 +148,7 @@ export async function POST(req: Request) {
       try {
         await transporter.sendMail({
           from: process.env.EMAIL_FROM || 'DELOXE HR <noreply@deloxehr.com>',
-          to: emailJob.email,
+          to: recipientEmail,
           subject: emailSubject,
           html: emailHtml,
         });
@@ -162,62 +162,25 @@ export async function POST(req: Request) {
       emailErrorMsg = 'SMTP settings missing in environment configuration';
     }
 
-    // Update email queue status
+    // Update email queue status safely if we had a job
     if (emailJob) {
-      await supabase
-        .from('interview_email_queue')
-        .update({
-          status: emailSent ? 'sent' : 'failed',
-          sent_at: emailSent ? new Date().toISOString() : null,
-          error_message: emailErrorMsg,
-          retry_count: emailJob.retry_count + 1
-        })
-        .eq('id', emailJob.id);
-    }
-
-    // Transition interview status to 'completed'
-    const { error: completeErr } = await supabase
-      .from('interviews')
-      .update({
-        status: 'completed',
-        email_status: emailSent ? 'sent' : 'failed',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', interviewId);
-
-    if (completeErr) {
-      console.error('Simulating complete status error:', completeErr);
-    }
-
-    // Log in status history
-    await supabase.from('interview_status_history').insert({
-      interview_id: interviewId,
-      previous_status: 'review_ongoing',
-      new_status: 'completed',
-      changed_by: 'system',
-      reason: `Simulated delay completed. Email dispatched: ${emailSent ? 'Success' : 'Failed'}`
-    });
-
-    // If candidate passed/accepted, unlock Job Pool in public.applicants table immediately!
-    const isAccepted = aiResult.recommendation === 'accepted';
-    if (isAccepted) {
-      // Find applicant
-      const { data: applicant } = await supabase
-        .from('applicants')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (applicant) {
+      try {
         await supabase
-          .from('applicants')
+          .from('interview_email_queue')
           .update({
-            current_stage: '6', // Unlocks Job Pool Stage
-            competitive_edge: `Readiness Score: ${aiResult.overall_score}%\nAI Recommendation: ${aiResult.recommendation.toUpperCase()}\nStrengths: ${aiResult.strengths.join(', ')}`
+            status: emailSent ? 'sent' : 'failed',
+            sent_at: emailSent ? new Date().toISOString() : null,
+            error_message: emailErrorMsg,
+            retry_count: emailJob.retry_count + 1
           })
-          .eq('id', applicant.id);
+          .eq('id', emailJob.id);
+      } catch (err) {
+        console.error('Could not update interview_email_queue status:', err);
       }
     }
+
+    // Transition interview status and sync stage using our dual db adapter
+    await completeInterviewWithSimulation(supabase, user.id, interview.id, emailSent, emailErrorMsg, aiResult);
 
     return NextResponse.json({
       success: true,

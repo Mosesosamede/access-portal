@@ -1,6 +1,12 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import {
+  getUserInterview,
+  createUserInterview,
+  getInterviewAnswers,
+  getEvaluationResult
+} from '@/lib/db-interview';
 
 function getServerSupabase(cookieStore: any) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -31,41 +37,20 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch user's interview
-    const { data: interview, error: interviewError } = await supabase
-      .from('interviews')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (interviewError) {
-      return NextResponse.json({ error: interviewError.message }, { status: 500 });
-    }
+    // Fetch user's interview using our adapter
+    const interview = await getUserInterview(supabase, user.id);
 
     if (!interview) {
       return NextResponse.json({ exists: false });
     }
 
-    // Fetch user's submitted answers
-    const { data: answers, error: answersError } = await supabase
-      .from('interview_answers')
-      .select('*')
-      .eq('interview_id', interview.id)
-      .order('question_number', { ascending: true });
+    // Fetch user's submitted answers using our adapter
+    const answers = await getInterviewAnswers(supabase, user.id, interview.id);
 
-    if (answersError) {
-      return NextResponse.json({ error: answersError.message }, { status: 500 });
-    }
-
-    // Fetch AI results if completed
+    // Fetch AI results if completed or review is ongoing using our adapter
     let aiResult = null;
     if (interview.status === 'completed' || interview.status === 'review_ongoing') {
-      const { data: resData } = await supabase
-        .from('interview_ai_results')
-        .select('*')
-        .eq('interview_id', interview.id)
-        .maybeSingle();
-      aiResult = resData;
+      aiResult = await getEvaluationResult(supabase, user.id, interview.id);
     }
 
     return NextResponse.json({
@@ -90,16 +75,8 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if interview already exists
-    const { data: existingInterview, error: checkError } = await supabase
-      .from('interviews')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (checkError) {
-      return NextResponse.json({ error: checkError.message }, { status: 500 });
-    }
+    // Check if interview already exists using our adapter
+    const existingInterview = await getUserInterview(supabase, user.id);
 
     if (existingInterview) {
       return NextResponse.json({
@@ -109,30 +86,8 @@ export async function POST() {
       });
     }
 
-    // Create new interview session
-    const { data: newInterview, error: insertError } = await supabase
-      .from('interviews')
-      .insert({
-        user_id: user.id,
-        status: 'in_progress',
-        current_question: 1,
-        started_at: new Date().toISOString()
-      })
-      .select('*')
-      .single();
-
-    if (insertError) {
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
-    }
-
-    // Insert to history log
-    await supabase.from('interview_status_history').insert({
-      interview_id: newInterview.id,
-      previous_status: null,
-      new_status: 'in_progress',
-      changed_by: 'system',
-      reason: 'Interview session initiated'
-    });
+    // Create new interview session using our adapter (which also handles status logs)
+    const newInterview = await createUserInterview(supabase, user.id);
 
     return NextResponse.json({
       success: true,
@@ -144,3 +99,4 @@ export async function POST() {
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
   }
 }
+

@@ -1,4 +1,3 @@
-import { GoogleGenAI } from '@google/genai';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
@@ -6,6 +5,7 @@ import Groq from 'groq-sdk';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { saveInterviewAnswer } from '@/lib/db-interview';
 
 // Lazily get Groq client
 let groqClient: Groq | null = null;
@@ -19,16 +19,6 @@ function getGroqClient() {
   }
   return groqClient;
 }
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
-  }
-});
-
 function getServerSupabase(cookieStore: any) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -113,55 +103,18 @@ export async function POST(req: Request) {
       transcriptionStatus = 'failed';
     }
 
-    // Save answer to Database (will trigger update of current_question via the DB trigger)
-    const { data: answer, error: insertError } = await supabase
-      .from('interview_answers')
-      .insert({
-        interview_id: interviewId,
-        user_id: user.id,
-        question_number: questionNumber,
-        question: questionText,
-        video_url: videoUrl,
-        duration_seconds: duration,
-        transcript: transcript,
-        upload_status: 'uploaded',
-        transcription_status: transcriptionStatus
-      })
-      .select('*')
-      .single();
-
-    if (insertError) {
-      // Let's try upserting in case of retry
-      const { data: upsertedAnswer, error: upsertError } = await supabase
-        .from('interview_answers')
-        .upsert({
-          interview_id: interviewId,
-          user_id: user.id,
-          question_number: questionNumber,
-          question: questionText,
-          video_url: videoUrl,
-          duration_seconds: duration,
-          transcript: transcript,
-          upload_status: 'uploaded',
-          transcription_status: transcriptionStatus
-        }, {
-          onConflict: 'interview_id,question_number'
-        })
-        .select('*')
-        .single();
-
-      if (upsertError) {
-        console.error('Insert/Upsert answer failed:', upsertError);
-        return NextResponse.json({ error: upsertError.message }, { status: 500 });
-      }
-
-      return NextResponse.json({
-        success: true,
-        answer: upsertedAnswer,
-        transcript,
-        message: 'Answer successfully saved and updated'
-      });
-    }
+    // Save answer to Database using our dual db adapter
+    const answer = await saveInterviewAnswer(supabase, user.id, interviewId, {
+      interview_id: interviewId,
+      user_id: user.id,
+      question_number: questionNumber,
+      question: questionText,
+      transcript: transcript,
+      video_url: videoUrl,
+      duration_seconds: duration,
+      upload_status: 'uploaded',
+      transcription_status: transcriptionStatus
+    });
 
     return NextResponse.json({
       success: true,
