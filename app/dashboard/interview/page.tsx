@@ -79,10 +79,7 @@ export default function AIInterviewPage() {
     setCheckingPermissions(true);
     try {
       if (request) {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        // Clean up tracks immediately
-        stream.getTracks().forEach(t => t.stop());
-        setPermissionsGranted(true);
+        await startCameraPreview();
       } else {
         // Query permissions via Permissions API if available
         const videoPerm = await navigator.permissions.query({ name: 'camera' as any }).catch(() => null);
@@ -90,6 +87,8 @@ export default function AIInterviewPage() {
 
         if (videoPerm?.state === 'granted' && audioPerm?.state === 'granted') {
           setPermissionsGranted(true);
+        } else if (videoPerm?.state === 'denied' || audioPerm?.state === 'denied') {
+          setPermissionsGranted(false);
         } else {
           setPermissionsGranted(null);
         }
@@ -180,6 +179,7 @@ export default function AIInterviewPage() {
       });
 
       mediaStreamRef.current = stream;
+      setPermissionsGranted(true);
       
       if (videoPreviewRef.current) {
         videoPreviewRef.current.srcObject = stream;
@@ -188,7 +188,7 @@ export default function AIInterviewPage() {
       }
     } catch (err) {
       console.error("Failed to start camera stream:", err);
-      alert("Could not open camera/microphone. Please ensure they are not used by another application.");
+      setPermissionsGranted(false);
     }
   };
 
@@ -205,7 +205,7 @@ export default function AIInterviewPage() {
 
   // Trigger camera preview whenever entering a recording state
   useEffect(() => {
-    if (permissionsGranted && !recordedUrl && !isUploading && !loadingState && interview && interview.status === 'in_progress') {
+    if (permissionsGranted !== false && !recordedUrl && !isUploading && !loadingState && interview && interview.status === 'in_progress') {
       startCameraPreview();
     }
     return () => {
