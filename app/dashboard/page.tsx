@@ -526,85 +526,32 @@ export default function DashboardPage() {
                         </p>
                       </div>
 
-                      {isActive && !interviewFormOpen && (
+                      {isActive && (
                         <button 
-                          onClick={() => setInterviewFormOpen(true)}
+                          onClick={() => router.push('/dashboard/interview')}
                           className="px-5 py-3 bg-[#DFFF00] text-[#1a2321] hover:brightness-110 font-black text-xs rounded-xl transition-all flex items-center gap-1.5 shrink-0 shadow-md animate-pulse"
                         >
-                          Complete Interview <ArrowRight size={13} />
+                          Start AI Interview <ArrowRight size={13} />
+                        </button>
+                      )}
+                      {isCompleted && (
+                        <button 
+                          onClick={() => router.push('/dashboard/interview')}
+                          className="px-5 py-3 bg-white/5 hover:bg-white/10 text-[#dbf0de] border border-white/10 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shrink-0 shadow-md"
+                        >
+                          View AI Evaluation <Sparkles size={13} className="text-[#DFFF00]" />
                         </button>
                       )}
                     </div>
-
-                    {/* Interview Form Expanded */}
-                    {isActive && interviewFormOpen && (
-                      <div className="mt-6 pt-6 border-t border-white/5 text-left">
-                        <form onSubmit={handleInterviewSubmit} className="space-y-4">
-                          <div className="bg-[#1a2321] border border-white/5 p-4 rounded-2xl space-y-1.5 mb-4">
-                            <h5 className="text-xs font-bold text-[#DFFF00] uppercase tracking-wider flex items-center gap-1.5">
-                              <Sparkles size={12} /> Interactive Interview Assessment
-                            </h5>
-                            <p className="text-[11px] text-gray-400 leading-relaxed">
-                              Review your readiness, record your profile statements, and submit them below. Match coordinators will evaluate these statements for direct placements.
-                            </p>
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <label className="text-[11px] font-bold text-gray-300 block uppercase tracking-wider">1. Career Motivation & Goals</label>
-                            <textarea 
-                              value={careerGoals}
-                              onChange={(e) => setCareerGoals(e.target.value)}
-                              placeholder="Briefly describe your career motivations, what you hope to accomplish, and why you are interested in our corporate partner programs."
-                              rows={3}
-                              required
-                              className="w-full bg-[#1a2321] border border-white/10 rounded-xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#DFFF00]/50 transition-colors"
-                            ></textarea>
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <label className="text-[11px] font-bold text-gray-300 block uppercase tracking-wider">2. Technical Problem Solving Reflection</label>
-                            <textarea 
-                              value={problemSolving}
-                              onChange={(e) => setProblemSolving(e.target.value)}
-                              placeholder="Discuss a challenging roadblocks you faced recently when coding or designing and how you went about resolving it."
-                              rows={3}
-                              required
-                              className="w-full bg-[#1a2321] border border-white/10 rounded-xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#DFFF00]/50 transition-colors"
-                            ></textarea>
-                          </div>
-
-                          <div className="flex gap-2.5 pt-2">
-                            <button 
-                              type="submit"
-                              disabled={submittingInterview}
-                              className="px-5 py-3 bg-[#DFFF00] text-[#1a2321] disabled:opacity-50 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all"
-                            >
-                              {submittingInterview ? (
-                                <>Submitting Interview... <Loader2 size={13} className="animate-spin" /></>
-                              ) : (
-                                <>Submit Responses & Clear Stage <Send size={13} /></>
-                              )}
-                            </button>
-                            <button 
-                              type="button"
-                              onClick={() => setInterviewFormOpen(false)}
-                              className="px-4 py-3 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl text-xs font-bold transition-all"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    )}
 
                     {isCompleted && (
                       <div className="mt-4 p-4 bg-green-500/5 border border-green-500/10 rounded-2xl flex items-start gap-2.5 text-left">
                         <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
                         <div>
-                          <span className="text-[11px] font-black text-green-400 block uppercase tracking-wider">Placement Interview Completed</span>
-                          <p className="text-[11px] text-gray-400 leading-normal mt-0.5">
-                            Your alignment answers have been successfully locked and updated. Your candidate record has officially cleared the interview phase!
-                          </p>
+                           <span className="text-[11px] font-black text-green-400 block uppercase tracking-wider">Placement Interview Completed</span>
+                           <p className="text-[11px] text-gray-400 leading-normal mt-0.5">
+                             Your interactive AI assessment has been completed. View your scores and personalized feedback report.
+                           </p>
                         </div>
                       </div>
                     )}

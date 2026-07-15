@@ -164,6 +164,7 @@ export default function ProfessionalExamPage() {
     } finally {
       setSubmitting(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicant?.id, refreshApplicantData]);
 
   // Auto Submit when Timer hits 0
@@ -205,6 +206,7 @@ export default function ProfessionalExamPage() {
     };
 
     autoGenerateAndLoadCertificate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicant?.id, submission?.submitted_at]);
 
   // 1. Initial Load: Questions and Submissions
@@ -280,6 +282,7 @@ export default function ProfessionalExamPage() {
     };
 
     loadExamData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicant, isLoading]);
 
   // 2. Timer Countdown logic
@@ -306,6 +309,7 @@ export default function ProfessionalExamPage() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExamRunning, timeLeft, submission, questions]);
 
   // Loading wrapper
