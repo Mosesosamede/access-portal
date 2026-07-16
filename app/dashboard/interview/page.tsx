@@ -1039,8 +1039,7 @@ export default function AIInterviewPage() {
                   This report has been securely registered on public placement chains under ID: <strong className="text-[#dbf0de] font-mono">{aiResult.id || 'sandbox-verified'}</strong>
                 </p>
                 <div className="flex gap-2 justify-center">
-                  <span className="px-2.5 py-1 bg-white/5 rounded text-[9px] font-mono font-bold text-[#dbf0de]">MD5-SECURED</span>
-                  <span className="px-2.5 py-1 bg-white/5 rounded text-[9px] font-mono font-bold text-[#dbf0de]">GEMINI-ALIGNED</span>
+                  <span className="px-2.5 py-1 bg-white/5 rounded text-[9px] font-mono font-bold text-[#dbf0de]">DELX-ALIGNED</span>
                 </div>
               </div>
 
