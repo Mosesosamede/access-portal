@@ -24,7 +24,7 @@ export const FormSchema = z.object({
   current_stage: z.enum(['Final Year Student', 'Waiting for NYSC', 'Currently Serving (NYSC)', 'Completed NYSC']),
 
   // Step 6 (These will store URLs after upload)
-  passport_photo_url: z.string().optional(),
+  profile_picture: z.string().optional(),
   educational_cert_url: z.string().optional(),
   cv_resume_url: z.string().optional(),
 

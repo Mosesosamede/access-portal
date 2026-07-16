@@ -12,7 +12,7 @@ export interface Applicant {
   phone_number: string;
   gender: string;
   date_of_birth: string;
-  passport_photo_url: string;
+  profile_picture: string;
   cv_resume_url: string;
   educational_cert_url: string;
   nysc_cert_url: string;

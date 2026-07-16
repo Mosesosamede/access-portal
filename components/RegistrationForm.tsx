@@ -83,7 +83,7 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
       const finalData = {
         ...dataWithoutPassword,
         user_id: authData.user.id,
-        passport_photo_url: passportUrl,
+        profile_picture: passportUrl,
         educational_cert_url: eduCertUrl,
         cv_resume_url: cvUrl,
         nysc_cert_url: nyscCertUrl,

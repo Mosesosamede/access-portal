@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useApplicant } from '@/components/ApplicantContext';
-import { Loader2, ArrowLeft, GraduationCap, CheckCircle2, Play, Lock, AlertCircle, Sparkles } from 'lucide-react';
+import { Loader2, ArrowLeft, GraduationCap, CheckCircle2, Play, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
@@ -148,7 +148,7 @@ export default function ModulePage() {
       if (text.startsWith('TIP:') || text.startsWith('Tip:')) {
         return (
           <div className="my-6 p-5 rounded-2xl border border-[#DFFF00]/10 bg-[#DFFF00]/5 text-gray-200 text-sm flex items-start gap-3">
-            <Sparkles className="w-5 h-5 flex-shrink-0 text-[#DFFF00] mt-0.5" />
+            <CheckCircle className="w-5 h-5 flex-shrink-0 text-[#DFFF00] mt-0.5" />
             <div>
               <span className="font-bold text-[#DFFF00]">Tip:</span> {text.replace(/^(TIP|Tip):\s*/, '')}
             </div>

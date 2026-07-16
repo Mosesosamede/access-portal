@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApplicant } from '@/components/ApplicantContext';
-import { Loader2, Lock, Unlock, ArrowLeft, BookOpen, GraduationCap, CheckCircle2, Clock, Award, ChevronRight, ChevronLeft, Check, Play, FileText, XCircle, Sparkles, AlertCircle } from 'lucide-react';
+import { Loader2, Lock, Unlock, ArrowLeft, BookOpen, GraduationCap, CheckCircle2, Clock, Award, ChevronRight, ChevronLeft, Check, Play, FileText, XCircle, CheckCircle, AlertCircle } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';

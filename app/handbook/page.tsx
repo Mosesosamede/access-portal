@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { getSupabase } from '@/lib/supabase';
 import { 
-  BookOpen, Download, Search, CheckCircle2, ChevronRight, 
-  Sparkles, FileText, Bookmark, ArrowRight, ShieldCheck, 
+  BookOpen, Download, Search, CheckCircle2, ChevronRight, CheckCircle,
+  FileText, Bookmark, ArrowRight, ShieldCheck, 
   HelpCircle, Copy, Check, Clock, Info, GraduationCap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -215,7 +215,7 @@ export default function HandbookPage() {
           
           <div className="space-y-4 max-w-2xl text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-bold text-[#dbf0de] uppercase tracking-wider">
-              <Sparkles size={12} className="text-[#DFFF00]" /> Academy Resource Center
+              <CheckCircle size={12} className="text-[#DFFF00]" /> Academy Resource Center
             </div>
             <h2 className="text-3xl md:text-4xl font-serif font-black text-white tracking-tight leading-tight">
               Workplace Readiness <span className="text-[#DFFF00]">Handbook</span>
@@ -478,7 +478,7 @@ export default function HandbookPage() {
                   <div className="space-y-3 p-4 bg-[#DFFF00]/5 rounded-2xl border border-[#DFFF00]/10 flex flex-col justify-between">
                     <div>
                       <h5 className="text-[11px] font-mono font-black uppercase text-[#DFFF00] tracking-wider flex items-center gap-1.5">
-                        <Sparkles size={12} className="animate-spin-slow" /> Action Plan
+                        <CheckCircle size={12} className="animate-spin-slow" /> Action Plan
                       </h5>
                       <p className="text-[11px] text-gray-300 leading-normal mt-2.5">
                         {selectedChapterData.actionStep}

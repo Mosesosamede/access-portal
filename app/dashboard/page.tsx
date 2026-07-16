@@ -5,7 +5,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import SiteMapTour from '@/components/layout/SiteMapTour';
 import { getSupabase } from '@/lib/supabase';
 import { 
-  BookOpen, Lock, Unlock, Award, Check, Sparkles, CheckCircle2, 
+  BookOpen, Lock, Unlock, Award, Check, CheckCircle2, 
   ArrowRight, Loader2, User as UserIcon, Briefcase, Calendar, 
   CheckCircle, ChevronRight, Play, FileText, Send, UserCheck
 } from 'lucide-react';
@@ -144,7 +144,7 @@ export default function DashboardPage() {
       setInterviewFormOpen(false);
       await refreshApplicantData();
     } catch (err) {
-      console.error('Error submitting interview simulation:', err);
+      console.error('Error submitting interview assessment:', err);
       alert('Failed to submit interview answers. Please try again.');
     } finally {
       setSubmittingInterview(false);
@@ -159,9 +159,9 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-6 border-b border-white/5" id="dashboard-header-bar">
         <div className="flex items-center gap-4">
           <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[#DFFF00]/30 shadow-lg bg-[#26312f] flex items-center justify-center">
-            {applicant.passport_photo_url ? (
+            {applicant.profile_picture ? (
               <Image 
-                src={applicant.passport_photo_url} 
+                src={applicant.profile_picture} 
                 alt={applicant.full_name} 
                 fill 
                 className="object-cover"
@@ -539,7 +539,7 @@ export default function DashboardPage() {
                           onClick={() => router.push('/dashboard/interview')}
                           className="px-5 py-3 bg-white/5 hover:bg-white/10 text-[#dbf0de] border border-white/10 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shrink-0 shadow-md"
                         >
-                          View AI Evaluation <Sparkles size={13} className="text-[#DFFF00]" />
+                          View AI Evaluation <CheckCircle size={13} className="text-[#DFFF00]" />
                         </button>
                       )}
                     </div>
@@ -582,7 +582,7 @@ export default function DashboardPage() {
                           <span className="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Stage 06</span>
                           <h4 className="text-base font-bold text-white">Career Job Pool Access</h4>
                           {!isLocked ? (
-                            <span className="px-2 py-0.5 bg-[#DFFF00]/10 text-[#DFFF00] border border-[#DFFF00]/25 rounded-full text-[9px] font-bold uppercase tracking-wider animate-pulse flex items-center gap-1"><Sparkles size={8} /> Unlocked</span>
+                            <span className="px-2 py-0.5 bg-[#DFFF00]/10 text-[#DFFF00] border border-[#DFFF00]/25 rounded-full text-[9px] font-bold uppercase tracking-wider animate-pulse flex items-center gap-1"><CheckCircle size={8} /> Unlocked</span>
                           ) : (
                             <span className="px-2 py-0.5 bg-white/5 text-gray-500 border border-white/5 rounded-full text-[9px] font-bold uppercase tracking-wider flex items-center gap-1"><Lock size={8} /> Locked</span>
                           )}

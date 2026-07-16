@@ -8,7 +8,7 @@ import { getSupabase } from '@/lib/supabase';
 import { useApplicant } from '@/components/ApplicantContext';
 import { 
   Video, Mic, MicOff, VideoOff, Play, Square, RefreshCw, Send, CheckCircle, 
-  ChevronRight, AlertCircle, Sparkles, Award, ShieldAlert, Check, HelpCircle, 
+  ChevronRight, AlertCircle, Award, ShieldAlert, Check, HelpCircle, 
   Loader2, ArrowRight, BookOpen, ExternalLink, Mail, Clock, Heart, ArrowLeft, RotateCcw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -62,9 +62,6 @@ export default function AIInterviewPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
-
-  // Simulated fallback mode (for testing preview before database is migrated)
-  const [isFallbackMode, setIsFallbackMode] = useState(false);
 
   // References (Standard WebMedia API elements)
   const videoPreviewRef = useRef<HTMLVideoElement | null>(null);
@@ -128,9 +125,8 @@ export default function AIInterviewPage() {
       const res = await fetch('/api/interview/status');
       
       if (!res.ok) {
-        // If status API failed, fall back gracefully to offline test mode
-        console.warn("DB not ready, activating sandbox preview fallback mode.");
-        loadFallbackInterview();
+        // If status API failed, fall back gracefully
+        console.warn("Interview status not found or DB error.");
         return;
       }
 
@@ -149,8 +145,7 @@ export default function AIInterviewPage() {
         setAiResult(null);
       }
     } catch (err) {
-      console.error("Failed to load interview. Using local fallback.", err);
-      loadFallbackInterview();
+      console.error("Failed to load interview.", err);
     } finally {
       setLoadingState(false);
       checkDevicePermissions(false); // Check silently
@@ -310,46 +305,13 @@ export default function AIInterviewPage() {
 
     try {
       let videoUrl = '';
-      const userId = user?.id || applicant?.user_id || 'sandbox';
+      const userId = user?.id || applicant?.user_id || '';
       const filename = `${userId}/${interview.id}_q${currentQuestion.number}.webm`;
 
       setUploadProgress(30);
 
-      if (isFallbackMode) {
-        // Local Sandbox Mode
-        videoUrl = `sandbox-local-video-url-for-question-${currentQuestion.number}`;
-        await new Promise(r => setTimeout(r, 1000));
-        setUploadProgress(70);
-
-        const mockAnswers = [...completedAnswers];
-        const newAnswer: Answer = {
-          question_number: currentQuestion.number,
-          question: currentQuestion.text,
-          video_url: videoUrl,
-          transcript: `[Sandbox Simulated Transcript for Q${currentQuestion.number}]: The candidate spoke professionally about ${currentQuestion.title} and detailed their direct readiness goals.`,
-          duration_seconds: recordingDuration
-        };
-
-        mockAnswers[currentQuestionIdx] = newAnswer;
-        setCompletedAnswers(mockAnswers);
-        localStorage.setItem('deloxe_sandbox_answers', JSON.stringify(mockAnswers));
-
-        // Advance question
-        if (currentQuestion.number < 3) {
-          const updatedInt = { ...interview, current_question: currentQuestion.number + 1 };
-          setInterview(updatedInt);
-          localStorage.setItem('deloxe_sandbox_interview', JSON.stringify(updatedInt));
-          setCurrentQuestionIdx(currentQuestionIdx + 1);
-        } else {
-          // Final question done, evaluate
-          const updatedInt = { ...interview, status: 'review_ongoing' };
-          setInterview(updatedInt);
-          localStorage.setItem('deloxe_sandbox_interview', JSON.stringify(updatedInt));
-          triggerSandboxEvaluation(mockAnswers);
-        }
-      } else {
-        // Real Supabase Storage Upload
-        const supabase = getSupabase();
+      // Real Supabase Storage Upload
+      const supabase = getSupabase();
         
         const { data: uploadData, error: uploadErr } = await supabase.storage
           .from('interview-videos')
@@ -409,7 +371,6 @@ export default function AIInterviewPage() {
           // Trigger evaluation
           triggerRealEvaluation(interview.id);
         }
-      }
 
       // Reset recording states for next question
       setRecordedChunks([]);
@@ -429,34 +390,20 @@ export default function AIInterviewPage() {
   const handleStartInterview = async () => {
     try {
       setLoadingState(true);
-      if (isFallbackMode) {
-        const mockInt = {
-          id: 'sandbox-interview-id',
-          user_id: applicant?.id || 'sandbox-user',
-          status: 'in_progress',
-          current_question: 1,
-          started_at: new Date().toISOString()
-        };
-        setInterview(mockInt);
-        localStorage.setItem('deloxe_sandbox_interview', JSON.stringify(mockInt));
+      const res = await fetch('/api/interview/status', {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (data.success) {
+        setInterview(data.interview);
         setCurrentQuestionIdx(0);
+        setCompletedAnswers([]);
       } else {
-        const res = await fetch('/api/interview/status', {
-          method: 'POST'
-        });
-        const data = await res.json();
-        if (data.success) {
-          setInterview(data.interview);
-          setCurrentQuestionIdx(0);
-          setCompletedAnswers([]);
-        } else {
-          throw new Error(data.error);
-        }
+        throw new Error(data.error);
       }
     } catch (err) {
       console.error("Failed to start interview:", err);
-      alert("Failed to start interview. Activating sandbox fallback.");
-      loadFallbackInterview();
+      alert("Failed to start interview.");
     } finally {
       setLoadingState(false);
     }
@@ -487,88 +434,6 @@ export default function AIInterviewPage() {
     }
   };
 
-  // Sandbox local evaluation
-  const triggerSandboxEvaluation = async (answers: Answer[]) => {
-    setIsEvaluating(true);
-    await new Promise(r => setTimeout(r, 1500));
-
-    const mockEval = {
-      interview_id: 'sandbox-interview-id',
-      overall_score: 82,
-      communication_score: 85,
-      confidence_score: 80,
-      professionalism_score: 88,
-      career_alignment_score: 85,
-      knowledge_score: 75,
-      motivation_score: 80,
-      internship_readiness_score: 82,
-      recommendation: 'accepted',
-      strengths: [
-        "Highly articulate explanation of career objectives and vision.",
-        "Demonstrated clear link between academic preparation and workspace values.",
-        "Strong confidence and professional presence during verbal answers."
-      ],
-      weaknesses: [
-        "Could elaborate further on specific technical troubleshooting examples.",
-        "Include more quantifiable metrics for personal project accomplishments.",
-        "Slightly paced presentation; can slow down vocal rate for impact."
-      ],
-      summary: "The candidate shows outstanding placement alignment. Their communication is clear, structured, and focused. They possess the required professionalism and drive for top-tier corporate matching.",
-      detailed_feedback: "To maximize interview success, practice direct STAR method formulation for technical scenarios. Overall, you are extremely ready for direct internship corporate matching."
-    };
-
-    setAiResult(mockEval);
-    localStorage.setItem('deloxe_sandbox_eval', JSON.stringify(mockEval));
-    setIsEvaluating(false);
-  };
-
-  // Fast-Forward 40 Mins (Simulate complete)
-  const handleFastForwardSim = async () => {
-    try {
-      setLoadingState(true);
-      if (isFallbackMode) {
-        const updatedInt = { ...interview, status: 'completed' };
-        setInterview(updatedInt);
-        localStorage.setItem('deloxe_sandbox_interview', JSON.stringify(updatedInt));
-        confetti({ particleCount: 150, spread: 80 });
-      } else {
-        const res = await fetch('/api/interview/simulate-complete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ interviewId: interview.id })
-        });
-        const data = await res.json();
-        if (data.success) {
-          confetti({ particleCount: 150, spread: 80 });
-          await fetchInterviewStatus();
-        } else {
-          throw new Error(data.error);
-        }
-      }
-    } catch (err: any) {
-      console.error("Fast forward simulation failed:", err);
-      alert(`Simulation error: ${err.message || err}`);
-    } finally {
-      setLoadingState(false);
-      await refreshApplicantData();
-    }
-  };
-
-  // Reset interview (Admin bypass)
-  const handleAdminReset = () => {
-    if (confirm("Are you sure you want to reset this interview attempt? This is irreversible.")) {
-      localStorage.removeItem('deloxe_sandbox_interview');
-      localStorage.removeItem('deloxe_sandbox_answers');
-      localStorage.removeItem('deloxe_sandbox_eval');
-      setIsFallbackMode(false);
-      setInterview(null);
-      setCompletedAnswers([]);
-      setAiResult(null);
-      setCurrentQuestionIdx(0);
-      router.refresh();
-    }
-  };
-
   // Render Loading
   if (loadingState) {
     return (
@@ -594,28 +459,22 @@ export default function AIInterviewPage() {
   return (
     <DashboardLayout>
       {/* Upper Navigation Indicator */}
-      <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => router.push('/dashboard')}
-            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 transition-colors"
-          >
-            <ArrowLeft size={16} />
-          </button>
-          <div>
-            <h1 className="text-2xl font-black text-white flex items-center gap-2">
-              Interactive AI Interview System
-            </h1>
-            <p className="text-xs text-gray-400">Sequence Stage 5 Assessment &bull; Automated Matchmaking Engine</p>
+        <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => router.push('/dashboard')}
+              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 transition-colors"
+            >
+              <ArrowLeft size={16} />
+            </button>
+            <div>
+              <h1 className="text-2xl font-black text-white flex items-center gap-2">
+                Interactive AI Interview System
+              </h1>
+              <p className="text-xs text-gray-400">Sequence Stage 5 Assessment &bull; Automated Matchmaking Engine</p>
+            </div>
           </div>
         </div>
-
-        {isFallbackMode && (
-          <span className="px-3 py-1 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[10px] font-black uppercase tracking-wider rounded-full">
-            Sandbox Simulator Active
-          </span>
-        )}
-      </div>
 
       {/* --- STEP 1: BEFORE START SCREEN --- */}
       {!interview && (
@@ -642,7 +501,7 @@ export default function AIInterviewPage() {
               <p className="text-xs text-gray-400 leading-relaxed">Each question allows a maximum of 2 minutes video and audio capture.</p>
             </div>
             <div className="p-5 bg-white/5 border border-white/5 rounded-2xl space-y-2">
-              <div className="w-8 h-8 bg-[#DFFF00]/10 text-[#DFFF00] rounded-lg flex items-center justify-center"><Sparkles size={16} /></div>
+              <div className="w-8 h-8 bg-[#DFFF00]/10 text-[#DFFF00] rounded-lg flex items-center justify-center"><CheckCircle size={16} /></div>
               <h4 className="text-sm font-bold text-white">AI Grading</h4>
               <p className="text-xs text-gray-400 leading-relaxed">Automated transcription and scoring for instant feedback and matching.</p>
             </div>

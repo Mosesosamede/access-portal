@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase';
 import { motion } from 'motion/react';
-import { BookOpen, Sparkles, Key, LogIn, ChevronRight, Mail, Loader2 } from 'lucide-react';
+import { BookOpen, CheckCircle, Key, LogIn, ChevronRight, Mail, Loader2 } from 'lucide-react';
 
 export default function HomePage() {
   const [showSupportNote, setShowSupportNote] = useState(false);
@@ -153,7 +153,7 @@ export default function HomePage() {
           variants={itemVariants}
           className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dbf0de]/5 border border-[#dbf0de]/10 mb-5 sm:mb-6 backdrop-blur-sm"
         >
-          <Sparkles size={12} className="text-[#dbf0de]" />
+          <CheckCircle size={12} className="text-[#dbf0de]" />
           <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider sm:tracking-widest text-[#dbf0de]">Deloxe Consulting Group</span>
         </motion.div>
 

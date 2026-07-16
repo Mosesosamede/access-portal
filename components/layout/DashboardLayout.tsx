@@ -36,7 +36,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   const completedQuizzesCount = Array.from(new Set(quizSubmissions.map(sub => sub.module_number))).length;
-  const isLocked = !applicant || completedQuizzesCount < 5;
+  const isInterviewCompleted = applicant?.current_stage === '6' || applicant?.current_stage === '7';
+  const isLocked = !applicant || completedQuizzesCount < 5 || !isInterviewCompleted;
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },

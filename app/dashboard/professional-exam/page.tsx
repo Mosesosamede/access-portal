@@ -15,7 +15,6 @@ import {
   Loader2, 
   BookOpen, 
   CheckCircle2, 
-  Sparkles, 
   Maximize2 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';

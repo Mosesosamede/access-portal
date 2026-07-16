@@ -34,7 +34,7 @@ export default function ProfilePage() {
 
       const { error: updateError } = await supabase
         .from('applicants')
-        .update({ passport_photo_url: data.publicUrl })
+        .update({ profile_picture: data.publicUrl })
         .eq('id', applicant.id);
 
       if (updateError) throw updateError;
@@ -79,15 +79,15 @@ export default function ProfilePage() {
       <div className="bg-[#26312f] p-6 md:p-10 rounded-3xl border border-[#dbf0de]/10 shadow-xl space-y-10">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               <div className="relative w-36 h-36 flex-shrink-0 rounded-2xl overflow-hidden shadow-lg border-2 border-[#dbf0de]/20 bg-[#1a2321] flex items-center justify-center">
-                  {applicant.passport_photo_url && !imageError ? (
+                  {applicant.profile_picture && !imageError ? (
                       <Image 
-                        src={applicant.passport_photo_url} 
+                        src={applicant.profile_picture} 
                         alt={applicant.full_name || 'Profile'} 
                         fill 
                         className="object-cover" 
                         referrerPolicy="no-referrer"
                         onError={() => {
-                            console.error('Failed to load image:', applicant.passport_photo_url);
+                            console.error('Failed to load image:', applicant.profile_picture);
                             setImageError(true);
                         }}
                       />
@@ -103,13 +103,13 @@ export default function ProfilePage() {
                   >
                     {isUploading ? <Loader2 className="animate-spin text-white" /> : <Camera className="text-white" />}
                   </button>
-                  {applicant.passport_photo_url && (
+                  {applicant.profile_picture && (
                     <button
                       onClick={async () => {
                           if (!applicant) return;
                           setIsUploading(true);
                           const supabase = getSupabase();
-                          await supabase.from('applicants').update({ passport_photo_url: null }).eq('id', applicant.id);
+                          await supabase.from('applicants').update({ profile_picture: null }).eq('id', applicant.id);
                           await refreshApplicantData();
                           setIsUploading(false);
                       }}
