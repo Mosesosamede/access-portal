@@ -1,13 +1,52 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useApplicant } from '@/components/ApplicantContext';
-import { Loader2, ArrowLeft, User as UserIcon } from 'lucide-react';
+import { Loader2, ArrowLeft, User as UserIcon, Camera } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { getSupabase } from '@/lib/supabase';
 
 export default function ProfilePage() {
-  const { applicant, isLoading } = useApplicant();
+  const { applicant, isLoading, refreshApplicantData } = useApplicant();
   const [imageError, setImageError] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !applicant) return;
+
+    setIsUploading(true);
+    const supabase = getSupabase();
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${applicant.user_id}/profile.${fileExt}`;
+
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('profile-pictures')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('profile-pictures')
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase
+        .from('applicants')
+        .update({ passport_photo_url: data.publicUrl })
+        .eq('id', applicant.id);
+
+      if (updateError) throw updateError;
+
+      await refreshApplicantData();
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      alert('Error uploading image.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -57,6 +96,29 @@ export default function ProfilePage() {
                           {applicant.full_name ? getInitials(applicant.full_name) : <UserIcon size={48} />}
                       </span>
                   )}
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+                    disabled={isUploading}
+                  >
+                    {isUploading ? <Loader2 className="animate-spin text-white" /> : <Camera className="text-white" />}
+                  </button>
+                  {applicant.passport_photo_url && (
+                    <button
+                      onClick={async () => {
+                          if (!applicant) return;
+                          setIsUploading(true);
+                          const supabase = getSupabase();
+                          await supabase.from('applicants').update({ passport_photo_url: null }).eq('id', applicant.id);
+                          await refreshApplicantData();
+                          setIsUploading(false);
+                      }}
+                      className="absolute bottom-0 right-0 p-1 bg-red-500 rounded-tl-xl text-white opacity-0 hover:opacity-100 transition-opacity"
+                    >
+                        Delete
+                    </button>
+                  )}
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleUpload} />
               </div>
               <div className="text-center sm:text-left flex flex-col gap-2">
                   <h3 className="text-3xl font-bold text-white">{applicant.full_name}</h3>
