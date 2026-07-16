@@ -1,4 +1,5 @@
 import { db } from './firebase-admin';
+import { getServiceSupabase } from './supabase';
 
 export interface DbInterview {
   id: string;
@@ -222,9 +223,11 @@ export async function saveInterviewAnswer(supabase: any, userId: string, intervi
     updated_at: now
   };
 
-  if (await isTableAvailable(supabase, 'interview_answers')) {
+  const adminSupabase = getServiceSupabase();
+
+  if (await isTableAvailable(adminSupabase, 'interview_answers')) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await adminSupabase
         .from('interview_answers')
         .upsert({
           interview_id: interviewId,
@@ -244,6 +247,8 @@ export async function saveInterviewAnswer(supabase: any, userId: string, intervi
       
       if (!error && data) {
         return data as DbAnswer;
+      } else if (error) {
+        console.error('Supabase saveInterviewAnswer error detail:', error);
       }
     } catch (err) {
       console.error('Supabase saveInterviewAnswer error, writing to Firestore:', err);
@@ -257,10 +262,10 @@ export async function saveInterviewAnswer(supabase: any, userId: string, intervi
   // Manually update the current_question in the interviews collection (mimicking DB trigger)
   try {
     const nextQuestion = Math.min(answer.question_number + 1, 4);
-    await db.collection('interviews').doc(userId).update({
+    await db.collection('interviews').doc(userId).set({
       current_question: nextQuestion,
       updated_at: now
-    });
+    }, { merge: true });
   } catch (err) {
     console.error('Failed to update current_question in Firestore:', err);
   }
@@ -278,9 +283,11 @@ export async function saveEvaluationResult(supabase: any, userId: string, interv
     created_at: now
   };
 
-  if (await isTableAvailable(supabase, 'interview_ai_results')) {
+  const adminSupabase = getServiceSupabase();
+
+  if (await isTableAvailable(adminSupabase, 'interview_ai_results')) {
     try {
-      const { error: aiErr } = await supabase
+      const { error: aiErr } = await adminSupabase
         .from('interview_ai_results')
         .upsert({
           interview_id: interviewId,
@@ -305,7 +312,7 @@ export async function saveEvaluationResult(supabase: any, userId: string, interv
 
       if (!aiErr) {
         // Update interview status to 'review_ongoing'
-        await supabase
+        await adminSupabase
           .from('interviews')
           .update({
             status: 'review_ongoing',
@@ -318,6 +325,8 @@ export async function saveEvaluationResult(supabase: any, userId: string, interv
           .eq('id', interviewId);
 
         return evalResult;
+      } else {
+        console.error('Supabase saveEvaluationResult error detail:', aiErr);
       }
     } catch (err) {
       console.error('Supabase saveEvaluationResult error, writing to Firestore:', err);
@@ -327,14 +336,16 @@ export async function saveEvaluationResult(supabase: any, userId: string, interv
   // Firestore Fallback
   await db.collection('interview_ai_results').doc(userId).set(evalData);
 
-  await db.collection('interviews').doc(userId).update({
+  await db.collection('interviews').doc(userId).set({
+    id: interviewId,
+    user_id: userId,
     status: 'review_ongoing',
     overall_score: evalResult.overall_score,
     recommendation: evalResult.recommendation,
     ai_review_status: 'completed',
     submitted_at: now,
     updated_at: now
-  });
+  }, { merge: true });
 
   try {
     await db.collection('interview_status_history').add({
@@ -395,10 +406,11 @@ export async function completeInterviewWithSimulation(
   aiResult: DbAiResult
 ): Promise<boolean> {
   const now = new Date().toISOString();
+  const adminSupabase = getServiceSupabase();
 
-  if (await isTableAvailable(supabase, 'interviews')) {
+  if (await isTableAvailable(adminSupabase, 'interviews')) {
     try {
-      await supabase
+      await adminSupabase
         .from('interviews')
         .update({
           status: 'completed',
@@ -410,15 +422,15 @@ export async function completeInterviewWithSimulation(
 
       // Transition applicants stage if accepted
       const isAccepted = aiResult.recommendation === 'accepted';
-      if (isAccepted && await isTableAvailable(supabase, 'applicants')) {
-        const { data: applicant } = await supabase
+      if (isAccepted && await isTableAvailable(adminSupabase, 'applicants')) {
+        const { data: applicant } = await adminSupabase
           .from('applicants')
           .select('*')
           .eq('user_id', userId)
           .maybeSingle();
 
         if (applicant) {
-          await supabase
+          await adminSupabase
             .from('applicants')
             .update({
               current_stage: '6',
@@ -434,24 +446,26 @@ export async function completeInterviewWithSimulation(
   }
 
   // Firestore Fallback
-  await db.collection('interviews').doc(userId).update({
+  await db.collection('interviews').doc(userId).set({
+    id: interviewId,
+    user_id: userId,
     status: 'completed',
     email_status: emailSent ? 'sent' : 'failed',
     completed_at: now,
     updated_at: now
-  });
+  }, { merge: true });
 
   const isAccepted = aiResult.recommendation === 'accepted';
-  if (isAccepted && await isTableAvailable(supabase, 'applicants')) {
+  if (isAccepted && await isTableAvailable(adminSupabase, 'applicants')) {
     try {
-      const { data: applicant } = await supabase
+      const { data: applicant } = await adminSupabase
         .from('applicants')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
 
       if (applicant) {
-        await supabase
+        await adminSupabase
           .from('applicants')
           .update({
             current_stage: '6',
