@@ -85,8 +85,12 @@ export const ApplicantProvider = ({ children }: { children: ReactNode }) => {
         .from('applicants')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
     
+    if (applicantError) {
+        console.error('Supabase error fetching applicant:', applicantError);
+    }
+
     if (applicantData) {
         setApplicant({
             ...applicantData,

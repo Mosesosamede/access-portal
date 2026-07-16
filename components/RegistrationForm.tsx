@@ -61,7 +61,7 @@ export default function RegistrationForm({ bookCodeId }: { bookCodeId: string })
       if (!files.eduCert) throw new Error("Educational certificate is required");
       if (!files.cv) throw new Error("CV is required");
 
-      const passportUrl = await uploadFile(files.passport, 'passport_img');
+      const passportUrl = await uploadFile(files.passport, 'profile-pictures');
       const eduCertUrl = await uploadFile(files.eduCert, 'Edu_cert');
       const cvUrl = await uploadFile(files.cv, 'cv_resume');
       
