@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS public.applicants (
     current_stage TEXT DEFAULT '1',
     status_tag TEXT DEFAULT 'Student',
     used_book_code_id UUID,
+    readiness_certificate_id TEXT,
+    readiness_certificate_url TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
