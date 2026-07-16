@@ -604,7 +604,7 @@ export default function AIInterviewPage() {
           </button>
           <div>
             <h1 className="text-2xl font-black text-white flex items-center gap-2">
-              Interactive AI Interview System <Sparkles size={18} className="text-[#DFFF00]" />
+              Interactive AI Interview System
             </h1>
             <p className="text-xs text-gray-400">Sequence Stage 5 Assessment &bull; Automated Matchmaking Engine</p>
           </div>
@@ -882,18 +882,7 @@ export default function AIInterviewPage() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-white/5 space-y-4">
-              <div className="p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-2xl text-left text-xs text-yellow-400/90 leading-relaxed max-w-xl mx-auto">
-                <strong>Development Quick Bypass:</strong> In production, candidates will receive their email feedback 40 minutes from submission. Use the simulation accelerator below to instantly speed-run time and view the final results screen.
-              </div>
-
-              <button
-                onClick={handleFastForwardSim}
-                className="px-6 py-3.5 bg-[#DFFF00] text-[#1a2321] text-xs font-black rounded-xl hover:scale-[1.01] active:scale-95 transition-all flex items-center gap-1.5 mx-auto shadow-md"
-              >
-                ⏩ Fast-Forward 40 Mins (Simulate AI Finish & Email Delivery)
-              </button>
-            </div>
+{/* Simulation accelerator removed */}
           </div>
         </div>
       )}
@@ -1047,15 +1036,7 @@ export default function AIInterviewPage() {
 
           </div>
 
-          {/* Admin panel resets */}
-          <div className="flex justify-end pt-8 border-t border-white/5">
-            <button
-              onClick={handleAdminReset}
-              className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded-xl transition-all"
-            >
-              Reset Assessment Attempt (Admin Reset)
-            </button>
-          </div>
+{/* Admin panel reset button removed, functionality moved to API endpoint */}
 
         </div>
       )}
