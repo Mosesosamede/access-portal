@@ -15,7 +15,8 @@ export const getSupabase = () => {
   if (url.endsWith('/')) {
     url = url.slice(0, -1);
   }
-  browserClient = createBrowserClient(url, anonKey);
+  const sanitizedAnonKey = anonKey.trim();
+  browserClient = createBrowserClient(url, sanitizedAnonKey);
   return browserClient;
 };
 
@@ -29,7 +30,8 @@ export const getServerSupabase = (cookieStore: any) => {
   if (url.endsWith('/')) {
     url = url.slice(0, -1);
   }
-  return createServerClient(url, anonKey, {
+  const sanitizedAnonKey = anonKey.trim();
+  return createServerClient(url, sanitizedAnonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -47,7 +49,7 @@ export const getServerSupabase = (cookieStore: any) => {
 
 export const getServiceSupabase = () => {
   let url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  let serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceKey) {
     throw new Error("Supabase URL and Service Role Key are required environment variables.");
   }
@@ -55,6 +57,8 @@ export const getServiceSupabase = () => {
   if (url.endsWith('/')) {
     url = url.slice(0, -1);
   }
+  // Sanitize Service Key: Trim whitespace
+  serviceKey = serviceKey.trim();
   return createClient(url, serviceKey);
 };
 

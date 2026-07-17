@@ -85,16 +85,34 @@ export async function POST(req: NextRequest) {
 
     // 6. Render the PDF Certificate using template overlay layout
     const studentName = applicant.full_name || 'Student Name';
-    const pdfBuffer = await generateCertificate({
-      studentName,
-      certificateId,
-      awardDate,
-    });
+    console.log('Generating PDF for:', studentName, certificateId);
+    let pdfBuffer: Buffer;
+    try {
+      pdfBuffer = await generateCertificate({
+        studentName,
+        certificateId,
+        awardDate,
+      });
+    } catch (genErr: any) {
+      console.error('Error generating PDF buffer:', genErr);
+      throw new Error(`PDF Generation failed: ${genErr.message || genErr}`);
+    }
 
     // 7. Upload PDF certificate to storage bucket
-    const { publicUrl, storagePath } = await uploadCertificate(pdfBuffer, certificateId);
+    console.log('Uploading PDF to storage:', certificateId);
+    let publicUrl: string;
+    let storagePath: string;
+    try {
+      const uploadRes = await uploadCertificate(pdfBuffer, certificateId);
+      publicUrl = uploadRes.publicUrl;
+      storagePath = uploadRes.storagePath;
+    } catch (upErr: any) {
+      console.error('Error uploading certificate:', upErr);
+      throw new Error(`Upload to storage failed: ${upErr.message || upErr}`);
+    }
 
     // 8. Insert record into `certificates` table
+    console.log('Saving certificate record to DB:', certificateId);
     const certRecord = {
       applicant_id: applicantId,
       certificate_id: certificateId,
@@ -116,7 +134,11 @@ export async function POST(req: NextRequest) {
 
     if (insertCertErr) {
       console.error('Error saving certificate to DB:', insertCertErr);
-      throw new Error(`Failed to save certificate record: ${insertCertErr.message}`);
+      return NextResponse.json({ 
+        error: 'Database error saving certificate', 
+        details: insertCertErr.message,
+        code: insertCertErr.code
+      }, { status: 500 });
     }
 
     // 9. Update applicants table to store readiness_certificate_id and readiness_certificate_url

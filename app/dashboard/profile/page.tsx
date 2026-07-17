@@ -86,6 +86,7 @@ export default function ProfilePage() {
                         fill 
                         className="object-cover" 
                         referrerPolicy="no-referrer"
+                        unoptimized
                         onError={() => {
                             console.error('Failed to load image:', applicant.profile_picture);
                             setImageError(true);
