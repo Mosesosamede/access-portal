@@ -38,7 +38,7 @@ export default function BuyBook() {
       tx_ref: txRef,
       amount: PRICES[currency],
       currency,
-      payment_options: 'card,mobilemoney,ussd',
+      payment_options: 'card, banktransfer, mobilemoney, ussd',
       customer: {
         email,
         name,
