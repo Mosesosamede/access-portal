@@ -13,15 +13,47 @@ export async function POST(req: NextRequest) {
     const supabase = getServiceSupabase();
 
     // Query book_codes table by code_string or code
-    const { data: bookCode, error } = await supabase
-      .from('book_codes')
-      .select('*')
-      .or(`code_string.eq.${cleanCode},code.eq.${cleanCode}`)
-      .maybeSingle();
+    const cleanCodeEscaped = cleanCode.replace(/"/g, '');
+    let bookCode = null;
+    let dbErr = null;
 
-    if (error) {
-      console.error('Error fetching book code:', error);
-      return NextResponse.json({ success: false, message: 'Database query error' }, { status: 500 });
+    try {
+      const { data, error } = await supabase
+        .from('book_codes')
+        .select('*')
+        .or(`code_string.eq."${cleanCodeEscaped}",code.eq."${cleanCodeEscaped}"`)
+        .maybeSingle();
+
+      if (error) {
+        dbErr = error;
+      } else {
+        bookCode = data;
+      }
+    } catch (e: any) {
+      dbErr = e;
+    }
+
+    // Fallback: If .or query errored or returned nothing, try querying code_string and code individually
+    if (!bookCode) {
+      const { data: byCodeString } = await supabase
+        .from('book_codes')
+        .select('*')
+        .eq('code_string', cleanCode)
+        .maybeSingle();
+
+      if (byCodeString) {
+        bookCode = byCodeString;
+      } else {
+        const { data: byCode } = await supabase
+          .from('book_codes')
+          .select('*')
+          .eq('code', cleanCode)
+          .maybeSingle();
+
+        if (byCode) {
+          bookCode = byCode;
+        }
+      }
     }
 
     // Scenario 1: Book code does not exist
