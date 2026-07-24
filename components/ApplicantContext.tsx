@@ -168,8 +168,8 @@ export const ApplicantProvider = ({ children }: { children: ReactNode }) => {
     // Try to save to DB
     const { error: insertError } = await supabase.from('quiz_submissions').insert(newSub);
 
-    let currentList = [...quizSubmissions];
-    const existingIndex = currentList.findIndex(s => s.module_number === moduleNumber);
+    let currentList = [...(quizSubmissions || [])];
+    const existingIndex = currentList.findIndex(s => s && s.module_number === moduleNumber);
     if (existingIndex > -1) {
       currentList[existingIndex] = newSub;
     } else {
@@ -180,7 +180,7 @@ export const ApplicantProvider = ({ children }: { children: ReactNode }) => {
     setQuizSubmissions(currentList);
 
     // Calculate progress_percent and advance stage
-    const quizCount = Array.from(new Set(currentList.map(s => s.module_number))).length;
+    const quizCount = Array.from(new Set((currentList || []).map(s => s?.module_number).filter(Boolean))).length;
     const totalModulesCount = modules.length || 5;
     const calculatedProgress = Math.min(100, Math.round((quizCount / totalModulesCount) * 100));
 
