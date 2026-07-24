@@ -13,7 +13,7 @@ export async function POST() {
 async function runPendingPaymentPoll() {
   const flwSecretKey = (process.env.FLUTTERWAVE_SECRET_KEY || '').trim().replace(/^["']|["']$/g, '');
   if (!flwSecretKey) {
-    return NextResponse.json({ error: 'FLUTTERWAVE_SECRET_KEY is missing' }, { status: 500 });
+    return NextResponse.json({ success: true, message: 'FLUTTERWAVE_SECRET_KEY is not configured', processedCount: 0 });
   }
 
   const supabase = getServiceSupabase();
