@@ -104,7 +104,7 @@ export default function DashboardPage() {
   const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
 
   // Calculate progress based on sequential journey
-  const completedQuizzesCount = Array.from(new Set(quizSubmissions.map(sub => sub.module_number))).length;
+  const completedQuizzesCount = Array.from(new Set((quizSubmissions || []).map(sub => sub?.module_number).filter(Boolean))).length;
   const totalModulesCount = modules.length || 5;
 
   const getJourneyProgress = () => {
