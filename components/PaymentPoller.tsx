@@ -7,9 +7,10 @@ export default function PaymentPoller() {
     // Initial run on page mount
     const pollPendingPayments = async () => {
       try {
-        await fetch('/api/payments/poll-pending', { method: 'POST' });
-      } catch (err) {
-        console.warn('Background payment polling failed:', err);
+        const res = await fetch('/api/payments/poll-pending', { method: 'POST' });
+        if (!res.ok) return;
+      } catch {
+        // Silently catch network or polling failures
       }
     };
 
