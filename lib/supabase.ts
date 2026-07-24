@@ -49,9 +49,9 @@ export const getServerSupabase = (cookieStore: any) => {
 
 export const getServiceSupabase = () => {
   let url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  let serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  let serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !serviceKey) {
-    throw new Error("Supabase URL and Service Role Key are required environment variables.");
+    throw new Error("Supabase URL and Key are required environment variables.");
   }
   // Sanitize URL: Remove trailing slash if present
   if (url.endsWith('/')) {
