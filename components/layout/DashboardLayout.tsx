@@ -35,7 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/login');
   };
 
-  const completedQuizzesCount = Array.from(new Set(quizSubmissions.map(sub => sub.module_number))).length;
+  const completedQuizzesCount = Array.from(new Set((quizSubmissions || []).map(sub => sub?.module_number).filter(Boolean))).length;
   const isInterviewCompleted = applicant?.current_stage === '6' || applicant?.current_stage === '7';
   const isLocked = !applicant || completedQuizzesCount < 5 || !isInterviewCompleted;
 
